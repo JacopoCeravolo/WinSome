@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -20,6 +21,8 @@ public class ServerMain {
     private final static String DELIMITER = " ";
     private final static ExecutorService threadpool = Executors.newCachedThreadPool();
     private final static ConcurrentHashMap<String, WinSomeUser> usersMap = new ConcurrentHashMap<>();
+    private final static WinSomeNetwork network = new WinSomeNetwork();
+    private final static LinkedList<Socket> connectedSockets = new LinkedList<>();
 
     public static void main(String[] args) {
         
@@ -27,12 +30,22 @@ public class ServerMain {
         try (ServerSocket listenSocket = new ServerSocket(PORT)) {
 
             while (true) {
-                threadpool.submit(new RequestHandler(listenSocket.accept(), usersMap));
+                Socket newConnection = listenSocket.accept();
+                connectedSockets.add(newConnection);
+                threadpool.submit(new RequestHandler(newConnection, network));
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+
+            for (Socket socket : connectedSockets) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             threadpool.shutdown();
         } 
     }

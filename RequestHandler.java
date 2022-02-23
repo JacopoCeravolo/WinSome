@@ -3,9 +3,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,11 +17,12 @@ public class RequestHandler implements Runnable{
     private final static String DELIMITER = " ";
 
     private Socket clientConnection;
-    private ConcurrentHashMap<String, WinSomeUser> usersMap = new ConcurrentHashMap<>();
+    // private ConcurrentHashMap<String, WinSomeUser> usersMap = new ConcurrentHashMap<>();
+    private WinSomeNetwork network = new WinSomeNetwork();
 
-    public RequestHandler(Socket clientConnection, ConcurrentHashMap<String, WinSomeUser> usersMap) {
+    public RequestHandler(Socket clientConnection, WinSomeNetwork network) {
         this.clientConnection = clientConnection;
-        this.usersMap = usersMap;
+        this.network = network;
     }
 
     @Override
@@ -30,11 +34,13 @@ public class RequestHandler implements Runnable{
              PrintWriter clientOutput = new PrintWriter(clientConnection.getOutputStream(), true)) {
 
             // Connection variables
+            WinSomeUser activeUser = null;
             Boolean endConnection = false;
             String username = null;
             String password = null;
 
             while (!endConnection) {
+                
                 String requestString = clientInput.readLine();
                 StringTokenizer requestLine = new StringTokenizer(requestString, DELIMITER);
                 StringBuilder responseLine = new StringBuilder("<< ");
@@ -44,6 +50,7 @@ public class RequestHandler implements Runnable{
                 String requestType = requestLine.nextToken();
 
                 switch (requestType) {
+                    
                     case "register": {
                         
                         String reg_username = (String)requestLine.nextToken();
@@ -52,16 +59,20 @@ public class RequestHandler implements Runnable{
                         LinkedList<String> tagsList = new LinkedList<>();
 
                         while (requestLine.hasMoreElements()) { // TODO: max 5 tags
-                            tagsList.add((String)requestLine.nextElement());
+                            tagsList.add((String)requestLine.nextToken());
                         }
 
                         WinSomeUser newUser = new WinSomeUser(reg_username, reg_password, tagsList);
-                        usersMap.putIfAbsent(newUser.getUserName(), newUser);
 
+                        network.register(newUser);
+                       
                         responseLine.append("registration successfull");
+
+                        System.out.println(responseLine);
 
                         break;
                     }
+                    
                     case "login": {
 
                         if (username != null || password != null) {
@@ -72,26 +83,17 @@ public class RequestHandler implements Runnable{
                         username = (String)requestLine.nextToken();
                         password = (String)requestLine.nextToken();
 
-                        WinSomeUser user = usersMap.get(username);
-                        
-                        if (user == null) {
+                        try {
+                            activeUser = network.login(username, password);
+                        } catch (UserNotFoundException e) {
                             responseLine.append("user not found");
                             break;
-                        }
-
-                        if (!password.equals(user.getPassword())) {
+                        } catch (InvalidPasswordException e) {
                             responseLine.append("invalid password");
                             break;
                         }
 
-                        if (user.getUserStatus().equals(WinSomeUserStatus.ONLINE)) {
-                            responseLine.append("user already logged in");
-                            break;
-                        }
-
-                        user.setUserStatus(WinSomeUserStatus.ONLINE);
-
-                        responseLine.append("user " + username + " logged in");
+                        responseLine.append("user "+username+" logged in");
 
                         break;
                     }
@@ -103,45 +105,253 @@ public class RequestHandler implements Runnable{
                             break;
                         }
 
-                        WinSomeUser user = usersMap.get(username);
-                        
-                        if (user == null) {
-                            // throw exception
-                        }
+                        network.logout(activeUser);
 
-                        user.setUserStatus(WinSomeUserStatus.OFFLINE);
-
-                        responseLine.append("user " + username + " logged out");
+                        responseLine.append("user "+username+" logged out");
 
                         endConnection = true;
 
                         break;
                     }
                         
-                    case "show":
+                    case "list": {
                         
-                        StringBuilder usersList = new StringBuilder();
+                        String subcase = requestLine.nextToken();
 
-                        // responseLine.append("winsome users\n");
+                        switch (subcase) {
+                            case "users": {
+                                
+                                StringBuilder usersList = network.listUsers(activeUser);
 
-                        for (WinSomeUser user : usersMap.values()) {
-                            responseLine.append(user.toString());
+                                System.out.println(usersList);
+
+                                responseLine.append("IN PROGRESS (list users)");
+                                break;
+                            }
+                            case "followers": {
+
+                                // TODO: temporary, move to callback
+                                HashMap<String, WinSomeUser> followers = activeUser.getFollowers();
+                                
+                                System.out.println(followers);
+
+                                responseLine.append("IN PROGRESS (list followers)");
+                                break;
+                            }
+                            case "following": {
+                                
+                                HashMap<String, WinSomeUser> following = activeUser.getFollowing();
+                                
+                                System.out.println(following);
+
+                                responseLine.append("IN PROGRESS (list following)");
+                                break;
+                            }     
+
+                            default:
+                                break;
                         }
 
-                        
                         break;
+                    }
+  
+                    case "follow": {
 
-                    case "post":
+                        String toFollow = (String)requestLine.nextToken();
+
+                        if (toFollow.equals(activeUser.getUserName())) {
+                            responseLine.append("cannot follow yourself");
+                            break;
+                        }
+
+                        try {
+                            network.followUser(activeUser, toFollow);
+                        } catch (UserNotFoundException e) {
+                            responseLine.append("user not found");
+                            break;
+                        }
+
+                        responseLine.append("following user "+toFollow);
 
                         break;
-                    case "comment":
-
-                        break;
+                    }
                     
+                    case "unfollow": {
+
+                        String toUnfollow = (String)requestLine.nextToken();
+
+                        try {
+                            network.unfollowUser(activeUser, toUnfollow);
+                        } catch (UserNotFoundException e) {
+                            responseLine.append("user not found");
+                            break;
+                        }
+
+                        responseLine.append("user "+toUnfollow+ " unfollowed");
+
+                        break;
+                    }
+                    
+                    case "post": {
+                        
+                        String title = (String)requestLine.nextToken();
+                        
+                        String contents = (String)requestLine.nextToken();
+
+                        WinSomePost newPost = new WinSomePost(activeUser, title, contents);
+
+                        Integer postID = network.createPost(activeUser, newPost);
+
+                        responseLine.append("post created (id="+postID+")");
+
+                        break;
+                    }
+
+                    case "blog": {
+
+                        HashMap<Integer, WinSomePost> blog = activeUser.getBlog();
+
+                        System.out.println(blog);
+
+                        responseLine.append("IN PROGRESS (blog)");
+
+                        break;
+                    }
+
+                    case "show": {
+                        
+                        String subcase = (String)requestLine.nextToken();
+
+                        switch (subcase) {
+                            case "feed": {
+                                ArrayList<WinSomePost> feed = network.getFeed(activeUser);
+        
+                                System.out.println(feed);
+
+                                responseLine.append("IN PROGRESS (show feed)");
+                                
+                                break;
+                            }                     
+                            case "post": {
+                                
+                                Integer postID = Integer.parseInt(requestLine.nextToken());
+                
+                                WinSomePost post = null;
+
+                                try {
+                                    post = network.getPost(postID);
+                                } catch (PostNotFoundException e) {
+                                    responseLine.append("post "+postID+" not found");
+                                    break;
+                                }
+                                
+                                System.out.println(post);
+
+                                responseLine.append("IN PROGRESS (show post)");
+
+                                break;
+                            }                        
+                            
+                            default:
+                                break;
+                        }
+
+                        break;
+                    }
+                    
+                    case "delete": {
+
+                        Integer postID = Integer.parseInt(requestLine.nextToken());
+
+                        WinSomePost post = null;
+
+                        try {
+                            post = network.deletePost(activeUser, postID);
+                        } catch (PostNotFoundException e) {
+                            responseLine.append("post "+postID+" not found");
+                            break;
+                        } catch (UnauthorizedOperationException e) {
+                            responseLine.append("unauthorized to delete post "+postID);
+                            break;
+                        }
+
+                        responseLine.append("post (id="+postID+") deleted");
+
+                        break;
+                    }
+
+                    case "rewin": {
+                        
+                        Integer postID = Integer.parseInt(requestLine.nextToken());
+
+                        try {
+                            network.rewinPost(activeUser, postID);
+                        } catch (PostNotFoundException e) {
+                            responseLine.append("post (id="+postID+") not found");
+                            break;
+                        }
+
+                        responseLine.append("post (id="+postID+") added to blog");
+
+                        break;
+                    }
+                        
+                    case "rate": {
+
+                        Integer postID = Integer.parseInt(requestLine.nextToken());
+                        Integer vote = Integer.parseInt(requestLine.nextToken());
+
+                        try {
+                            network.ratePost(activeUser, postID, vote);
+                        } catch (PostNotFoundException e) {
+                            responseLine.append("post (id="+postID+") not found");
+                            break;
+                        } catch (UnauthorizedOperationException e) {
+                            responseLine.append("unauthorized to vote post (id="+postID+")");
+                            break;
+                        }
+                        
+                        responseLine.append("voted post (id="+postID+")");
+
+                        break;
+                    }
+
+                    case "comment": {
+
+                        Integer postID = Integer.parseInt(requestLine.nextToken());
+                        String comment = requestLine.nextToken();
+
+                        try {
+                            network.commentPost(activeUser, postID, comment);
+                        } catch (PostNotFoundException e) {
+                            responseLine.append("post (id="+postID+") not found");
+                            break;
+                        } catch (UnauthorizedOperationException e) {
+                            responseLine.append("unauthorized to comment post (id="+postID+")");
+                            break;
+                        }
+
+                        responseLine.append("added comment to post (id="+postID+")");
+
+                        break;
+                    }
+                    
+                    case "wallet": {
+
+                        if (requestLine.hasMoreTokens()) {
+                            responseLine.append("IN PROGRESS (wallet btc)");
+                        } else {
+                            responseLine.append("IN PROGRESS (wallet)");
+                        }
+
+                        break;
+                    }
+
                     default:
                         break;
                 }
 
+                System.out.println(responseLine);
                 clientOutput.println(responseLine);
                 responseLine.setLength(0); // empty stringbuilder
                 

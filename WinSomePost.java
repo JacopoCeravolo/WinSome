@@ -3,8 +3,8 @@ import java.util.UUID;
 
 public class WinSomePost {
     
-    private UUID uniqueID;
-    private UUID authorID;
+    private Integer uniqueID;
+    private Integer authorID;
 
     private WinSomeUser author;
     private String title;
@@ -12,20 +12,28 @@ public class WinSomePost {
 
     private int upvotes;
     private int downvotes;
+    private int rewins;
 
     private HashMap<WinSomeUser, String> comments;
 
     public WinSomePost(WinSomeUser author, String title, String contents) {
-        this.uniqueID = UUID.randomUUID();
         this.author = author;
         this.authorID = author.getUserID();
         this.title = title;
         this.contents = contents;
 
+        this.upvotes = 0;
+        this.downvotes = 0;
+        this.rewins = 0;
+
         this.comments = new HashMap<>();
     }
 
-    public UUID getUniqueID() {
+    public void setPostID(Integer postID) {
+        this.uniqueID = postID;
+    }
+
+    public Integer getUniqueID() {
         return uniqueID;
     }
 
@@ -59,6 +67,18 @@ public class WinSomePost {
 
     public void downvotePost() {
         downvotes++;
+    }
+
+    public void increRewin() {
+        rewins++;
+    }
+
+    @Override
+    public String toString() {
+    
+        return new String(uniqueID + "\t|\t" + author.getUserName() + "\t|\t" + 
+                            title + "\t|\t" + contents + "\t|\t" + 
+                            upvotes + "\t|\t" + downvotes + "\t|\t" + rewins + "\t|\t" + comments.values().size()  + "\n");
     }
 
 }
