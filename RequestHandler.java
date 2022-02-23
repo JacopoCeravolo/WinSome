@@ -51,7 +51,7 @@ public class RequestHandler implements Runnable{
 
                 switch (requestType) {
                     
-                    case "register": {
+                    /* case "register": {
                         
                         String reg_username = (String)requestLine.nextToken();
                         String reg_password = (String)requestLine.nextToken();
@@ -72,8 +72,9 @@ public class RequestHandler implements Runnable{
 
                         break;
                     }
+                     */
                     
-                    case "login": {
+                     case "login": {
 
                         if (username != null || password != null) {
                             responseLine.append(username + " is currently logged in");

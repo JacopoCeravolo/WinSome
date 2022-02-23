@@ -193,4 +193,37 @@ public class WinSomeNetwork {
             
     }
 
+    public void addUserToTagList(WinSomeUser user, String tag) {
+        tagsMap.putIfAbsent(tag, new ArrayList<>());
+
+        tagsMap.get(tag).add(user);
+    }
+
+    public ConcurrentHashMap<String, WinSomeUser> getUsersMap() {
+        return usersMap;
+    }
+
+    public void setUsersMap(ConcurrentHashMap<String, WinSomeUser> usersMap) {
+        this.usersMap = usersMap;
+    }
+
+    public ConcurrentHashMap<Integer, WinSomePost> getPostsMap() {
+        return postsMap;
+    }
+
+    public void setPostsMap(ConcurrentHashMap<Integer, WinSomePost> postsMap) {
+        this.postsMap = postsMap;
+    }
+
+    public ConcurrentHashMap<String, ArrayList<WinSomeUser>> getTagsMap() {
+        return tagsMap;
+    }
+
+    public void setTagsMap(ConcurrentHashMap<String, ArrayList<WinSomeUser>> tagsMap) {
+        this.tagsMap = tagsMap;
+    }
+
+    
+
+
 }
