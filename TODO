@@ -1,0 +1,16 @@
+REQUEST
+
+type:length:parameters
+
+
+RESPONSE
+
+code:length
+message
+
+
+TODO:
+
+[] when deleting a post remove from all rewinners
+
+

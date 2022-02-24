@@ -57,7 +57,7 @@ public class WinSomeNetwork {
         user.setUserStatus(WinSomeUserStatus.OFFLINE);
     }
     
-    public StringBuilder listUsers(WinSomeUser user) {
+    public ArrayList<WinSomeUser> listUsers(WinSomeUser user) {
         
         StringBuilder format = new StringBuilder("NAME\t:\tFOLLOWERS\t:\tFOLLOWING\t:\tTAGS\n");
         ArrayList<WinSomeUser> usersList = new ArrayList<>();
@@ -72,7 +72,7 @@ public class WinSomeNetwork {
             }
         }
 
-        return format;
+        return usersList;
     }
 
     public void followUser(WinSomeUser user, String username) 

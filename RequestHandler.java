@@ -43,36 +43,13 @@ public class RequestHandler implements Runnable{
                 
                 String requestString = clientInput.readLine();
                 StringTokenizer requestLine = new StringTokenizer(requestString, DELIMITER);
-                StringBuilder responseLine = new StringBuilder("<< ");
+                StringBuilder responseLine = new StringBuilder();
 
                 System.out.println(">> " + requestString);
 
                 String requestType = requestLine.nextToken();
 
                 switch (requestType) {
-                    
-                    /* case "register": {
-                        
-                        String reg_username = (String)requestLine.nextToken();
-                        String reg_password = (String)requestLine.nextToken();
-
-                        LinkedList<String> tagsList = new LinkedList<>();
-
-                        while (requestLine.hasMoreElements()) { // TODO: max 5 tags
-                            tagsList.add((String)requestLine.nextToken());
-                        }
-
-                        WinSomeUser newUser = new WinSomeUser(reg_username, reg_password, tagsList);
-
-                        network.register(newUser);
-                       
-                        responseLine.append("registration successfull");
-
-                        System.out.println(responseLine);
-
-                        break;
-                    }
-                     */
                     
                      case "login": {
 
@@ -122,11 +99,12 @@ public class RequestHandler implements Runnable{
                         switch (subcase) {
                             case "users": {
                                 
-                                StringBuilder usersList = network.listUsers(activeUser);
+                                ArrayList<WinSomeUser> usersList = network.listUsers(activeUser);
 
-                                System.out.println(usersList);
+                                for (WinSomeUser user : usersList) {
+                                    responseLine.append(user.toString());
+                                }
 
-                                responseLine.append("IN PROGRESS (list users)");
                                 break;
                             }
                             case "followers": {
@@ -143,9 +121,11 @@ public class RequestHandler implements Runnable{
                                 
                                 HashMap<String, WinSomeUser> following = activeUser.getFollowing();
                                 
-                                System.out.println(following);
+                                for (WinSomeUser user : following.values()) {
+                                    responseLine.append(user.toString());
+                                }
 
-                                responseLine.append("IN PROGRESS (list following)");
+                                // responseLine.append("IN PROGRESS (list following)");
                                 break;
                             }     
 
@@ -212,9 +192,11 @@ public class RequestHandler implements Runnable{
 
                         HashMap<Integer, WinSomePost> blog = activeUser.getBlog();
 
-                        System.out.println(blog);
+                        for (WinSomePost post : blog.values()) {
+                            responseLine.append(post.toString());
+                        }
 
-                        responseLine.append("IN PROGRESS (blog)");
+                        // responseLine.append("IN PROGRESS (blog)");
 
                         break;
                     }
@@ -227,9 +209,11 @@ public class RequestHandler implements Runnable{
                             case "feed": {
                                 ArrayList<WinSomePost> feed = network.getFeed(activeUser);
         
-                                System.out.println(feed);
+                                for (WinSomePost post : feed) {
+                                    responseLine.append(post.toString());
+                                }
 
-                                responseLine.append("IN PROGRESS (show feed)");
+                                // responseLine.append("IN PROGRESS (show feed)");
                                 
                                 break;
                             }                     
@@ -245,10 +229,8 @@ public class RequestHandler implements Runnable{
                                     responseLine.append("post "+postID+" not found");
                                     break;
                                 }
-                                
-                                System.out.println(post);
 
-                                responseLine.append("IN PROGRESS (show post)");
+                                responseLine.append(post.toString());
 
                                 break;
                             }                        
@@ -352,8 +334,9 @@ public class RequestHandler implements Runnable{
                         break;
                 }
 
-                System.out.println(responseLine);
-                clientOutput.println(responseLine);
+                /* System.out.println(responseLine);
+                clientOutput.println(responseLine); */
+                Protocol.sendResponse(clientOutput, responseLine.toString());
                 responseLine.setLength(0); // empty stringbuilder
                 
             }

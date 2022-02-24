@@ -55,7 +55,8 @@ public class ClientMain {
                     RMIRegistrationInterface STUB = null;
 
                     try {
-                        RMI_REGISTRY = LocateRegistry.getRegistry(6889);
+
+                        RMI_REGISTRY = LocateRegistry.getRegistry(RMI_PORT);
                         STUB = (RMIRegistrationInterface) RMI_REGISTRY.lookup(Utils.RMI_SERVICE_NAME);
                         STUB.registerUser(username, password, tagsList);
 
@@ -70,7 +71,14 @@ public class ClientMain {
 
                 serverOutput.println(request);
 
-                System.out.println(serverInput.readLine());
+                String response = null;
+                try {
+                    response = Protocol.receiveResponse(serverInput);
+                } catch (IOException e) {
+                    System.err.println("could not read from socket");
+                }
+
+                System.out.println(response);
             }
 
         } catch (UnknownHostException e) {
