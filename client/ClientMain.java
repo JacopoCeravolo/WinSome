@@ -28,13 +28,7 @@ public class ClientMain {
 
     public static void main(String[] args) {
 
-        System.out.println("");
-        System.out.println(" ------------------");
-        System.out.println("|    WELCOME TO    |");
-        System.out.println("|  WINSOME CLIENT  |");
-        System.out.println(" ------------------\n");
-
-        System.out.println("Type 'help' to see list of commands\n");
+        welcomeMsg();
 
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         String keyboardInput = null;
@@ -61,9 +55,7 @@ public class ClientMain {
             switch (tokenizedInput.nextToken()) {
                 
                 case "help": {
-
-                    System.out.println(">> list of commands");
-
+                    helpMsg();
                     break;
                 }
 
@@ -158,6 +150,11 @@ public class ClientMain {
             
                 default: {
 
+                    if (serverSocket == null) {
+                        System.err.println("You are not connected to WinSome server, you have to login first");
+                        continue;
+                    }
+
                     serverOutput.println(keyboardInput);
 
                     String serverResponse = null;
@@ -194,7 +191,56 @@ public class ClientMain {
             serverOutput.close();
         }
 
-        System.out.println(PROMPT + "Bye bye!\n");
+        System.out.println(PROMPT + "Bye, bye!\n");
 
+    }
+
+    public static void welcomeMsg() {
+
+        System.out.printf("\n");
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+        System.out.printf("|                                 WELCOME TO                                  |\n");
+        System.out.printf("|                                WINSOME CLIENT                               |\n");
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+
+        System.out.printf("Type 'help' to see list of commands\n");
+
+    }
+
+    public static void helpMsg() {
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+        System.out.printf("|                               REGISTRATION                                  |\n");
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+        System.out.printf("| If you haven't registered yet, create an account to start using WinSome     |\n");
+        System.out.printf("| Type the following command:                                                 |\n");
+        System.out.printf("|          register <username> <password> <tag1> ... <tag5>                   |\n");
+        System.out.printf("| With this command you create a new user with specified <username> and       |\n");
+        System.out.printf("| <password>. You also have to list up to 5 tags which allows you to find     |\n");
+        System.out.printf("| users with your same interests. Tags are made of a single word such as      |\n");
+        System.out.printf("| music, sports, politics...                                                  |\n");
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+        System.out.printf("|     COMMAND    |      ARGUMENTS    |               DESCRIPTION              |\n");
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+        System.out.printf("| login          | username password | login user with given credentials      |\n");        
+        System.out.printf("| logout         |                   | logout current user                    |\n");        
+        System.out.printf("| list users     |                   | show users with same tags              |\n");        
+        System.out.printf("| list following |                   | show users you're following            |\n");        
+        System.out.printf("| list followers |                   | show users who follow you              |\n");        
+        System.out.printf("| follow         | username          | follow user                            |\n");        
+        System.out.printf("| unfollow       | username          | unfollow user                          |\n");        
+        System.out.printf("| blog           |                   | view your blog                         |\n");        
+        System.out.printf("| post           | title contents    | create a new post on your blog         |\n");        
+        System.out.printf("| show feed      |                   | view posts from users you follow       |\n");        
+        System.out.printf("| show post      | idPost            | show a specific post                   |\n");        
+        System.out.printf("| delete         | idPost            | delete a post from your blog           |\n");
+        System.out.printf("| rewin          | idPost            | rewin a post                           |\n");        
+        System.out.printf("| rate           | idPost vote       | rate a post: (+1) upvote (-1) downvote |\n");        
+        System.out.printf("| comment        | idPost comment    | write a comment to a post              |\n");        
+        System.out.printf("| wallet         |                   | show your balance in wincoins          |\n");       
+        System.out.printf("| wallet btc     |                   | show your balance in bitcoins          |\n");
+        System.out.printf(" -----------------------------------------------------------------------------\n");
+        
     }
 }
