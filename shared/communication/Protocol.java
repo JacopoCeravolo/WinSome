@@ -32,10 +32,10 @@ public class Protocol {
         StringTokenizer header = new StringTokenizer(in.readLine(), DELIMITER);
 
         String code = header.nextToken();
-        sb.append("\nCode: " + code + "\n");
+        // sb.append("\nCode: " + code + "\n");
 
         Integer length = Integer.parseInt(header.nextToken());
-        sb.append("Length: " + length + "\n");
+        // sb.append("Length: " + length + "\n");
 
 
         char[] message = new char[length];
@@ -47,7 +47,7 @@ public class Protocol {
             offset += count;
         }
 
-        sb.append("\nMessage:\n" + String.valueOf(message));
+        sb.append(String.valueOf(message));
 
         return sb.toString();
     }
