@@ -12,5 +12,10 @@ message
 TODO:
 
 [] when deleting a post remove from all rewinners
+[] callback for list followers
+[] wallet class
+[] add timestamp to user and posts
+[] should be packing requests or send them raw?
+
 
 
