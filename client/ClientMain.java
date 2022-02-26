@@ -17,7 +17,6 @@ import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import javax.xml.namespace.QName;
 
 public class ClientMain {
     
@@ -109,6 +108,7 @@ public class ClientMain {
                         break;
                     }
 
+                    // TODO: move socket reading/writing to communication package
                     serverOutput.println(keyboardInput);
 
                     String serverResponse = null;
@@ -148,13 +148,18 @@ public class ClientMain {
                     break;
                 }
             
-                default: {
+                case "follow": {
 
-                    if (serverSocket == null) {
-                        System.err.println("You are not connected to WinSome server, you have to login first");
-                        continue;
+                    String userToFollow = tokenizedInput.nextToken();
+
+                    if (tokenizedInput.hasMoreTokens()) {
+                        
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          follow <username>");
+                        break;
                     }
-
+                    
+                    // TODO: move socket reading/writing to communication package
                     serverOutput.println(keyboardInput);
 
                     String serverResponse = null;
@@ -165,6 +170,260 @@ public class ClientMain {
                     }
 
                     System.out.println(serverResponse);
+
+                    
+                    break;
+                }
+
+                case "unfollow": {
+
+                    String userToUnfollow = tokenizedInput.nextToken();
+
+                    if (tokenizedInput.hasMoreTokens()) {
+                        
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          unfollow <username>");
+                        break;
+                    }
+                    
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+
+                    break;
+                }
+
+                case "post": {
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "delete": {
+
+                    Integer idPost = null;
+
+                    try {
+                        idPost = Integer.parseInt(tokenizedInput.nextToken());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Expecting numeric value:");
+                        System.out.println("          delete <idPost>");
+                        break;
+                    }
+
+                    if (tokenizedInput.hasMoreTokens()) {
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          delete <idPost>");
+                        break;
+                    }
+                    
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "rate": {
+
+                    Integer idPost = null;
+                    Integer vote = null;
+
+                    try {
+                        idPost = Integer.parseInt(tokenizedInput.nextToken());
+                        vote = Integer.parseInt(tokenizedInput.nextToken());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Expecting numeric value:");
+                        System.out.println("          rate <idPost> <vote>  (+1 upvote, -1 downvote)");
+                        break;
+                    }
+
+                    if (tokenizedInput.hasMoreTokens()) {
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          rate <idPost> <vote>");
+                        break;
+                    }
+                    
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "rewin": {
+
+                    Integer idPost = null;
+
+                    try {
+                        idPost = Integer.parseInt(tokenizedInput.nextToken());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Expecting numeric value:");
+                        System.out.println("          rewin <idPost>");
+                        break;
+                    }
+
+                    if (tokenizedInput.hasMoreTokens()) {
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          rewin <idPost>");
+                        break;
+                    }
+                    
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "comment": {
+
+                    Integer idPost = null;
+
+                    try {
+                        idPost = Integer.parseInt(tokenizedInput.nextToken());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Expecting numeric value:");
+                        System.out.println("          comment <idPost> <comment>");
+                        break;
+                    }
+
+                    
+                    String comment = tokenizedInput.nextToken();
+
+
+                    if (tokenizedInput.hasMoreTokens()) {
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          comment <idPost> <comment>");
+                        break;
+                    }
+                    
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "blog": {
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "show": {
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "list": {
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                case "wallet": {
+                    // TODO: move socket reading/writing to communication package
+                    serverOutput.println(keyboardInput);
+
+                    String serverResponse = null;
+                    try {
+                        serverResponse = Protocol.receiveResponse(serverInput);
+                    } catch (IOException e) {
+                        System.err.println("could not read from socket");
+                    }
+
+                    System.out.println(serverResponse);
+
+                    break;
+                }
+
+                default: {
+
+                    System.out.println("["+keyboardInput+"]" + " - unknown sequence");
+                    System.out.printf("\nType 'help' to see list of commands\n\n");
 
                     break;
                 }
@@ -198,12 +457,12 @@ public class ClientMain {
     public static void welcomeMsg() {
 
         System.out.printf("\n");
-        System.out.printf(" -----------------------------------------------------------------------------\n");
-        System.out.printf("|                                 WELCOME TO                                  |\n");
-        System.out.printf("|                                WINSOME CLIENT                               |\n");
-        System.out.printf(" -----------------------------------------------------------------------------\n");
+        System.out.printf("                 ----------------------------------------\n");
+        System.out.printf("                |               WELCOME TO               |\n");
+        System.out.printf("                |              WINSOME CLIENT            |\n");
+        System.out.printf("                 ----------------------------------------\n");
 
-        System.out.printf("Type 'help' to see list of commands\n");
+        System.out.printf("\nType 'help' to see list of commands\n\n");
 
     }
 

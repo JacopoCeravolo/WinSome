@@ -95,7 +95,18 @@ public class WinSomeUser {
 
     @Override
     public String toString() {
-        return new String(username + "\t:\t" + followers.size() + "\t:\t" + following.size() + "\t:\t" + tagsList + "\n");
+
+
+        String userFormatted = String.format(
+            "| %10s | %d [followers] | %d [following] | ", username, followers.size(), following.size());
+        
+        for (String tag : tagsList) {
+            userFormatted += tag + ", ";
+        }
+
+        userFormatted += "\n";
+        
+        return userFormatted;
     }
 
 }

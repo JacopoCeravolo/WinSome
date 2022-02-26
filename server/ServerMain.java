@@ -4,6 +4,7 @@ import server.rmi.*;
 import server.socialnetwork.*;
 import server.threads.*;
 
+
 import shared.rmi.*;
 import shared.utils.*;
 
@@ -35,9 +36,7 @@ public class ServerMain {
     
     private final static int LISTEN_PORT = 6789;
     private final static int RMI_PORT = 6889;
-    private final static String DELIMITER = " ";
     private final static ExecutorService threadpool = Executors.newCachedThreadPool();
-    private final static ConcurrentHashMap<String, WinSomeUser> usersMap = new ConcurrentHashMap<>();
     private final static WinSomeNetwork network = new WinSomeNetwork();
     private final static LinkedList<Socket> connectedSockets = new LinkedList<>();
     private final static RMIRegistration REGISTRATION = new RMIRegistration(network);

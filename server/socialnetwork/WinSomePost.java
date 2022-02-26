@@ -77,10 +77,28 @@ public class WinSomePost {
 
     @Override
     public String toString() {
+
+        String postFormatted = new String(
+            "\n(id="+uniqueID+") " +  author.getUserName() + " says:\n\n" +
+            "\t" + title + "\n" +
+            "\t" + contents + "\n\n" +
+            "\t[upvotes]: " + upvotes + " [downvotes]: " + downvotes + " [rewins]: " + rewins + "\n"
+        );
+
+        if (!comments.isEmpty()) {
+
+            String commentsFormatted = "\n";
+
+            for (WinSomeUser user : comments.keySet()) {
+                commentsFormatted = commentsFormatted + 
+                    "\t" + user.getUserName() + " commented:\n" +
+                    "\t\t- " + comments.get(user) + "\n";
+            }
+
+            postFormatted = postFormatted + commentsFormatted;
+        }
     
-        return new String(uniqueID + "\t|\t" + author.getUserName() + "\t|\t" + 
-                            title + "\t|\t" + contents + "\t|\t" + 
-                            upvotes + "\t|\t" + downvotes + "\t|\t" + rewins + "\t|\t" + comments.values().size()  + "\n");
+        return postFormatted;
     }
 
 }

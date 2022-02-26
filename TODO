@@ -16,6 +16,9 @@ TODO:
 [] wallet class
 [] add timestamp to user and posts
 [] should be packing requests or send them raw?
+[] parse comments and posts between " "
+
+
 
 
 

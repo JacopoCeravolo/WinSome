@@ -10,6 +10,14 @@ public class Protocol {
     public final static String DELIMITER = ":";
 
     // ADD METHODS FOR REQUEST HANDLING
+    public static void packRequest(PrintWriter out, String requestType, String parameters) {
+
+        StringBuilder request = new StringBuilder();
+
+        request.append(requestType + DELIMITER);
+        request.append(parameters.length() + DELIMITER);
+        
+    }
     
     public static void sendResponse(PrintWriter out, String response) {
         
