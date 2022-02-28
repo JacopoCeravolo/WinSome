@@ -1,5 +1,6 @@
 package server.socialnetwork;
 
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +21,8 @@ public class WinSomeUser {
     private HashMap<String, WinSomeUser> following;
 
     private HashMap<Integer, WinSomePost> blog;
+
+    private WinSomeWallet wallet;
     
     
     // Constructor
@@ -40,6 +43,8 @@ public class WinSomeUser {
 
         this.blog = new HashMap<>();
 
+        this.wallet = new WinSomeWallet();
+
     }
 
     public void setUserID(Integer uniqueID) {
@@ -54,7 +59,9 @@ public class WinSomeUser {
 
     }
 
-    
+    public WinSomeWallet getWallet() {
+        return this.wallet;
+    }
     // Getters
 
     public Integer getUserID() {

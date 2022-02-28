@@ -17,18 +17,21 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RequestHandler implements Runnable{
 
     private final static String DELIMITER = " ";
 
     private Socket clientConnection;
-    // private ConcurrentHashMap<String, WinSomeUser> usersMap = new ConcurrentHashMap<>();
+    private AtomicBoolean exitSignal;
+    
     private WinSomeNetwork network = new WinSomeNetwork();
 
-    public RequestHandler(Socket clientConnection, WinSomeNetwork network) {
+    public RequestHandler(Socket clientConnection, WinSomeNetwork network, AtomicBoolean exitSignal) {
         this.clientConnection = clientConnection;
         this.network = network;
+        this.exitSignal = exitSignal;
     }
 
     @Override
@@ -45,7 +48,7 @@ public class RequestHandler implements Runnable{
             String username = null;
             String password = null;
 
-            while (!endConnection) {
+            while (!endConnection && !exitSignal.get()) {
                 
                 String requestString = clientInput.readLine();
                 StringTokenizer requestLine = new StringTokenizer(requestString, DELIMITER);
@@ -330,7 +333,11 @@ public class RequestHandler implements Runnable{
                         if (requestLine.hasMoreTokens()) {
                             responseLine.append("IN PROGRESS (wallet btc)");
                         } else {
-                            responseLine.append("IN PROGRESS (wallet)");
+
+                            System.out.println("WALLET");
+                            WinSomeWallet wallet = activeUser.getWallet();
+                            System.out.println(wallet.viewHistory()); 
+                            responseLine.append(wallet.viewHistory());
                         }
 
                         break;

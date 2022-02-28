@@ -1,12 +1,16 @@
 package server.socialnetwork;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class WinSomePost {
     
     private Integer uniqueID;
-    private Integer authorID;
+
+    private Date timeStamp;
 
     private WinSomeUser author;
     private String title;
@@ -16,19 +20,25 @@ public class WinSomePost {
     private int downvotes;
     private int rewins;
 
-    private HashMap<WinSomeUser, String> comments;
+    private List<WinSomeVote> votes;
+    private List<WinSomeComment> comments;
+
+    // private HashMap<WinSomeUser, String> comments;
 
     public WinSomePost(WinSomeUser author, String title, String contents) {
+        
         this.author = author;
-        this.authorID = author.getUserID();
         this.title = title;
         this.contents = contents;
+
+        this.timeStamp = new Date(System.currentTimeMillis());
 
         this.upvotes = 0;
         this.downvotes = 0;
         this.rewins = 0;
 
-        this.comments = new HashMap<>();
+        this.votes = new ArrayList<>();
+        this.comments = new ArrayList<>();
     }
 
     public void setPostID(Integer postID) {
@@ -59,15 +69,21 @@ public class WinSomePost {
         return downvotes;
     }
 
-    public HashMap<WinSomeUser, String> getComments() {
+    public List<WinSomeComment> getComments() {
         return comments;
     }
 
-    public void upvotePost() {
+    public List<WinSomeVote> getVotes() {
+        return votes;
+    }
+
+    public void upvotePost(WinSomeUser user) {
+        votes.add(new WinSomeVote(user, +1));
         upvotes++;
     }
 
-    public void downvotePost() {
+    public void downvotePost(WinSomeUser user) {
+        votes.add(new WinSomeVote(user, -1));
         downvotes++;
     }
 
@@ -89,10 +105,10 @@ public class WinSomePost {
 
             String commentsFormatted = "\n";
 
-            for (WinSomeUser user : comments.keySet()) {
+            for (WinSomeComment comment : comments) {
                 commentsFormatted = commentsFormatted + 
-                    "\t" + user.getUserName() + " commented:\n" +
-                    "\t\t- " + comments.get(user) + "\n";
+                    "\t" + comment.getAuthor().getUserName() + " commented:\n" +
+                    "\t\t- " + comment.getContents() + "\n";
             }
 
             postFormatted = postFormatted + commentsFormatted;

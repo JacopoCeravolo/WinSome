@@ -28,14 +28,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import server.socialnetwork.WinSomeUser;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class ServerMain {
     
+    private final static long KEEP_ALIVE = 180000;
     private final static int LISTEN_PORT = 6789;
     private final static int RMI_PORT = 6889;
+    private final static AtomicBoolean exitSignal = new AtomicBoolean(false);
     private final static ExecutorService threadpool = Executors.newCachedThreadPool();
     private final static WinSomeNetwork network = new WinSomeNetwork();
     private final static LinkedList<Socket> connectedSockets = new LinkedList<>();
@@ -43,6 +44,9 @@ public class ServerMain {
     
 
     public static void main(String[] args) {
+
+        Thread rewardManager = new Thread(new RewardsManager(network, exitSignal));
+        rewardManager.start();
 
         RMIRegistrationInterface STUB = null;
         Registry RMI_REGISTRY = null;
@@ -61,10 +65,11 @@ public class ServerMain {
         
         try (ServerSocket listenSocket = new ServerSocket(LISTEN_PORT)) {
 
-            while (true) {
+            long startTime = System.currentTimeMillis();
+            while ((KEEP_ALIVE - Math.abs(System.currentTimeMillis() - startTime)) > 0) {
                 Socket newConnection = listenSocket.accept();
                 connectedSockets.add(newConnection);
-                threadpool.submit(new RequestHandler(newConnection, network));
+                threadpool.submit(new RequestHandler(newConnection, network, exitSignal));
             }
 
         } catch (IOException e) {
@@ -78,7 +83,17 @@ public class ServerMain {
                     e.printStackTrace();
                 }
             }
+
+            exitSignal.set(true);
             threadpool.shutdown();
+
+            try {
+                rewardManager.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println("Exiting...");
         } 
     }
 }

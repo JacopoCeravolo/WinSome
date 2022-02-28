@@ -175,9 +175,9 @@ public class WinSomeNetwork {
             if (!this.getFeed(user).contains(post)) throw new UnauthorizedOperationException();
 
             if (vote > 0) {
-                post.upvotePost();
+                post.upvotePost(user);
             } else {
-                post.downvotePost();
+                post.downvotePost(user);
             }
             
     }
@@ -188,10 +188,11 @@ public class WinSomeNetwork {
             WinSomePost post = postsMap.get(postID);
 
             if (post == null) throw new PostNotFoundException();
+            
 
             if (!this.getFeed(user).contains(post)) throw new UnauthorizedOperationException();
 
-            post.getComments().put(user, comment);
+            post.getComments().add(new WinSomeComment(user, comment));
             
     }
 
