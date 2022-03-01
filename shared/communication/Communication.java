@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
-public class Protocol {
+public class Communication {
 
     public final static String DELIMITER = ":";
 
@@ -19,32 +19,33 @@ public class Protocol {
         
     }
     
-    public static void sendResponse(PrintWriter out, String response) {
+    public static void sendResponse(PrintWriter out, String responseLine) {
         
         StringBuilder sb = new StringBuilder();
 
-        // always send ok for now
-        sb.append("OK");
-        sb.append(":");
-        sb.append(response.length() + "\n");
-
-        sb.append(response);
-        
+        sb.append("OK" + DELIMITER);
+   
+        sb.append(responseLine.length() + "\n");
+       
+        sb.append(responseLine);
+       
         out.print(sb);
+        
         out.flush();
+        
     }
 
     public static String receiveResponse(BufferedReader in) throws IOException {
 
         StringBuilder sb = new StringBuilder();
+       
         StringTokenizer header = new StringTokenizer(in.readLine(), DELIMITER);
+        
 
         String code = header.nextToken();
-        // sb.append("\nCode: " + code + "\n");
 
         Integer length = Integer.parseInt(header.nextToken());
-        // sb.append("Length: " + length + "\n");
-
+    
 
         char[] message = new char[length];
         int offset = 0;
@@ -54,7 +55,7 @@ public class Protocol {
             if (count == -1) break;
             offset += count;
         }
-
+        
         sb.append(String.valueOf(message));
 
         return sb.toString();

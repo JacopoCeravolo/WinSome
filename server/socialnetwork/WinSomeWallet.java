@@ -21,10 +21,10 @@ public class WinSomeWallet {
 
     public String viewHistory() {
 
-        StringBuilder sb = new StringBuilder("AMOUNT\t\t\tDATE\n");
+        StringBuilder sb = new StringBuilder("AMOUNT\tDATE\n");
 
         for (Transaction t : history) {
-            sb.append(t.getVariation() + "\t" + t.getTimeStamp() + "\n");
+            sb.append( String.format("%.2f", t.getVariation()) + "\t" + t.getTimeStamp() + "\n");
         }
 
         sb.append("\nTOTAL:\t" + totalAmount + " [WinCoins]\n");

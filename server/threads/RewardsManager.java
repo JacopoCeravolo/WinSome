@@ -14,7 +14,7 @@ import server.socialnetwork.WinSomeVote;
 
 public class RewardsManager implements Runnable {
 
-    private final long AWAIT_TIME = 300000;
+    private final long AWAIT_TIME = 1 * 60000;
     private WinSomeNetwork network;
     private AtomicBoolean exitSignal;
 
@@ -39,19 +39,24 @@ public class RewardsManager implements Runnable {
 
                 for (WinSomeUser user : usersMap.values()) {
         
-                    double likes_reward = 0;
-                    double comments_rewards = 0;
                     double total_reward = 0;
 
                     for (WinSomePost post : user.getBlog().values()) {
 
-                        likes_reward = calculateLikesReward(post, last_update);
-                        comments_rewards = calculateCommentsReward(post, last_update);
+
+                        double likes_reward = calculateLikesReward(post, last_update);
+                        double comments_reward = calculateCommentsReward(post, last_update);
             
-                        total_reward = Math.log(likes_reward) + Math.log(comments_rewards);
+                        double total_post_reward = Math.log(likes_reward) + Math.log(comments_reward);
+
+                        if (total_post_reward > 0) {
+
+                            total_reward = total_post_reward / (post.times_evalued++);
+                        }
                     }
 
-                    user.getWallet().addTransaction(new Transaction(new Date(System.currentTimeMillis()), total_reward));
+                    user.getWallet().addTransaction(
+                        new Transaction(new Date(System.currentTimeMillis()), total_reward));
                 }
             }
 
@@ -59,6 +64,7 @@ public class RewardsManager implements Runnable {
         }
         
     }
+
 
     private synchronized int calculateLikesReward(WinSomePost post, long last_update) {
 

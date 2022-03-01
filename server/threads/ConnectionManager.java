@@ -1,8 +1,10 @@
 package server.threads;
 
+import server.rmi.CallbackRegistration;
 import server.socialnetwork.*;
 
 import shared.communication.*;
+import shared.rmi.CallbackRegistrationInterface;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,19 +21,23 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RequestHandler implements Runnable{
+public class ConnectionManager implements Runnable{
 
     private final static String DELIMITER = " ";
 
     private Socket clientConnection;
     private AtomicBoolean exitSignal;
     
-    private WinSomeNetwork network = new WinSomeNetwork();
+    private WinSomeNetwork network;
+    private CallbackRegistration FOLLOWER_UPDATES;
 
-    public RequestHandler(Socket clientConnection, WinSomeNetwork network, AtomicBoolean exitSignal) {
+    public ConnectionManager(Socket clientConnection, WinSomeNetwork network, 
+        AtomicBoolean exitSignal, CallbackRegistration FOLLOWER_UPDATES) {
+        
         this.clientConnection = clientConnection;
         this.network = network;
         this.exitSignal = exitSignal;
+        this.FOLLOWER_UPDATES = FOLLOWER_UPDATES;
     }
 
     @Override
@@ -161,6 +167,8 @@ public class RequestHandler implements Runnable{
                             break;
                         }
 
+                        FOLLOWER_UPDATES.followerUpdate(toFollow, "add"+":"+activeUser.getUserName());
+
                         responseLine.append("following user "+toFollow);
 
                         break;
@@ -176,6 +184,8 @@ public class RequestHandler implements Runnable{
                             responseLine.append("user not found");
                             break;
                         }
+
+                        FOLLOWER_UPDATES.followerUpdate(toUnfollow, "remove"+":"+activeUser.getUserName());
 
                         responseLine.append("user "+toUnfollow+ " unfollowed");
 
@@ -349,7 +359,7 @@ public class RequestHandler implements Runnable{
 
                 /* System.out.println(responseLine);
                 clientOutput.println(responseLine); */
-                Protocol.sendResponse(clientOutput, responseLine.toString());
+                Communication.sendResponse(clientOutput, responseLine.toString());
                 responseLine.setLength(0); // empty stringbuilder
                 
             }

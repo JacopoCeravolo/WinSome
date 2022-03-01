@@ -19,6 +19,7 @@ public class WinSomePost {
     private int upvotes;
     private int downvotes;
     private int rewins;
+    public int times_evalued;
 
     private List<WinSomeVote> votes;
     private List<WinSomeComment> comments;
@@ -36,6 +37,7 @@ public class WinSomePost {
         this.upvotes = 0;
         this.downvotes = 0;
         this.rewins = 0;
+        this.times_evalued = 0;
 
         this.votes = new ArrayList<>();
         this.comments = new ArrayList<>();

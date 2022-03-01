@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -30,17 +31,30 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.swing.plaf.synth.Region;
+
 
 public class ServerMain {
     
-    private final static long KEEP_ALIVE = 180000;
+    private final static long KEEP_ALIVE = 12 * 60000;
+
     private final static int LISTEN_PORT = 6789;
     private final static int RMI_PORT = 6889;
+    private final static int CALLBACK_PORT = 6989;
+
+    private final static String CALLBACK_SERVICE_NAME = "WinSomeCallback";
+    private final static String RMI_SERVICE_NAME = "WinSomeRegistration";
+
     private final static AtomicBoolean exitSignal = new AtomicBoolean(false);
+
     private final static ExecutorService threadpool = Executors.newCachedThreadPool();
+
     private final static WinSomeNetwork network = new WinSomeNetwork();
+
     private final static LinkedList<Socket> connectedSockets = new LinkedList<>();
+
     private final static RMIRegistration REGISTRATION = new RMIRegistration(network);
+    private final static CallbackRegistration FOLLOWER_UPDATES = new CallbackRegistration();
     
 
     public static void main(String[] args) {
@@ -48,17 +62,34 @@ public class ServerMain {
         Thread rewardManager = new Thread(new RewardsManager(network, exitSignal));
         rewardManager.start();
 
-        RMIRegistrationInterface STUB = null;
+        RMIRegistrationInterface REGISTRATION_STUB = null;
+        CallbackRegistrationInterface CALLBACK_STUB = null;
         Registry RMI_REGISTRY = null;
+        Registry CALLBACK_REGISTRY = null;
 
+        // RMI
         try {
-            
-            STUB = (RMIRegistrationInterface) UnicastRemoteObject.exportObject(REGISTRATION, 0);
+
+            REGISTRATION_STUB = (RMIRegistrationInterface) UnicastRemoteObject.exportObject(REGISTRATION, 0);
             LocateRegistry.createRegistry(RMI_PORT);
             RMI_REGISTRY = LocateRegistry.getRegistry(RMI_PORT);
-            RMI_REGISTRY.rebind(Utils.RMI_SERVICE_NAME, STUB);
+            RMI_REGISTRY.rebind(RMI_SERVICE_NAME, REGISTRATION_STUB);
 
         } catch (RemoteException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+
+        // CALLBACK
+        try {
+
+            CALLBACK_STUB = (CallbackRegistrationInterface) UnicastRemoteObject.exportObject(FOLLOWER_UPDATES, 0);
+            LocateRegistry.createRegistry(CALLBACK_PORT);
+            CALLBACK_REGISTRY = LocateRegistry.getRegistry(CALLBACK_PORT);
+            CALLBACK_REGISTRY.bind(CALLBACK_SERVICE_NAME, CALLBACK_STUB);
+
+        } catch (RemoteException e) {
+            System.err.println("Error: " + e.getMessage());
+        } catch (AlreadyBoundException e) {
             System.err.println("Error: " + e.getMessage());
         }
         
@@ -69,7 +100,7 @@ public class ServerMain {
             while ((KEEP_ALIVE - Math.abs(System.currentTimeMillis() - startTime)) > 0) {
                 Socket newConnection = listenSocket.accept();
                 connectedSockets.add(newConnection);
-                threadpool.submit(new RequestHandler(newConnection, network, exitSignal));
+                threadpool.submit(new ConnectionManager(newConnection, network, exitSignal, FOLLOWER_UPDATES));
             }
 
         } catch (IOException e) {
