@@ -1,22 +1,22 @@
 package client;
 
 import java.rmi.RemoteException;
+import java.rmi.server.RemoteObject;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import shared.rmi.FollowersUpdateInterface;
 
-public class FollowersUpdate implements FollowersUpdateInterface {
+public class FollowersUpdate extends RemoteObject implements FollowersUpdateInterface {
 
-    ArrayList<String> followersList;
-
-    public FollowersUpdate(ArrayList<String> followersList) {
+    public FollowersUpdate() {
         super();
-        this.followersList = followersList;
     }
 
     @Override
     public void notifyEvent(String update) throws RemoteException {
+
+        //System.out.println(update);
 
         String DELIMITER = ":";
         StringTokenizer parseUpdate = new StringTokenizer(update, DELIMITER);
@@ -28,23 +28,10 @@ public class FollowersUpdate implements FollowersUpdateInterface {
 
         switch (action) {
             
-            case "add": {
-                if (!followersList.contains(user)) {
-                    followersList.add(user);
-                } 
+            case "add": ClientMain.followersList.add(user); break;
+            case "remove": ClientMain.followersList.remove(user); break;
+            default: throw new RemoteException("invalid callback message"); 
 
-                break;
-            }
-        
-            case "remove": {
-                if (followersList.contains(user)) {
-                    followersList.remove(user);
-                }
-
-                break;
-            }
-
-            default: throw new RemoteException("invalid callback message");
         }
     }
 }

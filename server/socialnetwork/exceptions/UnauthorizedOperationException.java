@@ -1,4 +1,4 @@
-package server.socialnetwork;
+package server.socialnetwork.exceptions;
 public class UnauthorizedOperationException extends Exception{
     
     public UnauthorizedOperationException() {

@@ -2,8 +2,7 @@
 
 echo -n "Building utilities..."
 
-javac ./communication/*.java;
-javac ./rmi/*.java;
-javac ./utils/*.java
+javac -d ../classes ./communication/*.java;
+javac -d ../classes ./rmi/*.java;
 
 echo "done"

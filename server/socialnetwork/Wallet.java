@@ -3,13 +3,12 @@ package server.socialnetwork;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WinSomeWallet {
-
+public class Wallet {
 
     private float totalAmount;
     private List<Transaction> history;
 
-    public WinSomeWallet() {
+    public Wallet() {
         history = new ArrayList<>();
         totalAmount = 0;
     }

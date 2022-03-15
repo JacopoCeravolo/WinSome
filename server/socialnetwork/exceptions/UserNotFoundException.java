@@ -1,4 +1,4 @@
-package server.socialnetwork;
+package server.socialnetwork.exceptions;
 public class UserNotFoundException extends Exception {
     
     public UserNotFoundException() {

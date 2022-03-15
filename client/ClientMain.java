@@ -1,9 +1,5 @@
 package client;
 
-import shared.rmi.*;
-import shared.communication.*;
-import shared.utils.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,7 +12,13 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+
+import shared.communication.Protocol;
+import shared.rmi.FollowersUpdateInterface;
+import shared.rmi.RMIRegistrationInterface;
 
 
 public class ClientMain {
@@ -24,13 +26,22 @@ public class ClientMain {
     private final static String DELIMITER = " ";
     private final static String PROMPT = ">> ";
 
+    static final Pattern ARG_PAT = Pattern.compile("\"[^\"]+\"|\\S+");
+
     private final static int SERVER_PORT = 6789;
     private final static int RMI_PORT = 6889;
     private final static int CALLBACK_PORT = 6989;
 
     private final static String CALLBACK_SERVICE_NAME = "WinSomeCallback";
     public final static String RMI_SERVICE_NAME = "WinSomeRegistration";
+    public static ArrayList<String> followersList;
 
+    public static String[] parseArgs(String message) {
+        return ARG_PAT.matcher(message)
+            .results()
+            .map(r -> r.group())
+            .toArray(String[]::new);
+    }
 
     public static void main(String[] args) {
 
@@ -39,15 +50,18 @@ public class ClientMain {
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         String keyboardInput = null;
         
-        String activeUsername = new String();
+        // String activeUsername = new String();
         Socket serverSocket = null;
         BufferedReader serverInput = null;
         PrintWriter serverOutput = null;
         FollowersUpdate callbackUpdate = null;
-        CallbackRegistrationInterface CALLBACK_SERVICE = null;
-        FollowersUpdateInterface CALLBACK_STUB = null;
+        Registry RMI_REGISTRY = null;
+        RMIRegistrationInterface REGISTRATION_STUB = null;
+        // CallbackRegistrationInterface CALLBACK_SERVICE = null;
+        FollowersUpdateInterface FOLLOWERS_UPDATE = null;
         boolean exit = false;
-        ArrayList<String> followersList = new ArrayList<>();
+
+        String activeUser = null;
 
         while (!exit) {
 
@@ -60,17 +74,18 @@ public class ClientMain {
                 System.exit(1);
             }
 
-            StringTokenizer tokenizedInput = new StringTokenizer(keyboardInput, DELIMITER);
+            StringTokenizer keyboardParser = new StringTokenizer(keyboardInput, DELIMITER);
 
+            String action = keyboardParser.nextToken();
             
-            switch (tokenizedInput.nextToken()) {
+            switch (action) {
                 
                 case "help": {
                     helpMsg();
                     break;
                 }
 
-                case "exit": {
+                /* case "exit": {
                     exit = true;
 
                     serverOutput.println("logout");
@@ -93,28 +108,26 @@ public class ClientMain {
                     }
 
                     break;
-                }
+                } */
 
                 case "register": {
 
-                    String username = tokenizedInput.nextToken();
-                    String password = tokenizedInput.nextToken();
+                    String username = keyboardParser.nextToken();
+                    String password = keyboardParser.nextToken();
 
                     ArrayList<String> tagsList = new ArrayList<>();
 
-                    while (tokenizedInput.hasMoreTokens()) {
-                        tagsList.add(tokenizedInput.nextToken());
+                    while (keyboardParser.hasMoreTokens()) {
+                        tagsList.add(keyboardParser.nextToken());
                     }
-
-                    Registry RMI_REGISTRY = null;
-                    Registry CALLBACK_REGISTRY = null;
-                    RMIRegistrationInterface REGISTRATION_STUB = null;
 
                     // RMI
                     try {
 
                         RMI_REGISTRY = LocateRegistry.getRegistry(RMI_PORT);
+
                         REGISTRATION_STUB = (RMIRegistrationInterface) RMI_REGISTRY.lookup(RMI_SERVICE_NAME);
+                        
                         REGISTRATION_STUB.registerUser(username, password, tagsList);
 
                     } catch (RemoteException e) {
@@ -123,30 +136,26 @@ public class ClientMain {
                         System.err.println(RMI_SERVICE_NAME + " unknown service name");
                     }
 
-                    // CALLBACK
-                    try {
-                        CALLBACK_REGISTRY = LocateRegistry.getRegistry(CALLBACK_PORT);
-                        CALLBACK_SERVICE = (CallbackRegistrationInterface) 
-                            CALLBACK_REGISTRY.lookup(CALLBACK_SERVICE_NAME);
-                        callbackUpdate = new FollowersUpdate(followersList);
-                        CALLBACK_STUB = (FollowersUpdateInterface) 
-                            UnicastRemoteObject.exportObject(callbackUpdate, 0);
-                        CALLBACK_SERVICE.registerForCallaback(username, CALLBACK_STUB);
-                    } catch (RemoteException e) {
-
-                    } catch (NotBoundException e) {
-                        System.err.println(CALLBACK_SERVICE_NAME + " unkown service name");
-                    }
-
                     break;
                 }
 
                 case "login": {
 
+                    String username = keyboardParser.nextToken();
+                    String password = keyboardParser.nextToken();
+
+                    if (keyboardParser.hasMoreTokens()) {
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          login <username> <password>");
+                        break;
+                    }
+
                     try {
+
                         serverSocket = new Socket("localhost", SERVER_PORT);  
                         serverInput = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
                         serverOutput = new PrintWriter(serverSocket.getOutputStream(), true);
+
                     } catch (UnknownHostException e) {
                         System.err.println("Unknown host");
                         exit = true;
@@ -157,38 +166,71 @@ public class ClientMain {
                         break;
                     }
 
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+                    Protocol.sendRequest(serverOutput, action, username, password);
 
                     String serverResponse = null;
                     try {
-                        System.err.println("reading");
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
+                    // TODO: check request type (errors etc)
+                    
+                    activeUser = username;
+
+                    try {
+
+                        followersList = new ArrayList<>();
+                        // Exporting object 
+                        callbackUpdate = new FollowersUpdate();
+                        FOLLOWERS_UPDATE = (FollowersUpdateInterface) 
+                            UnicastRemoteObject.exportObject(callbackUpdate, 0);
+
+                        REGISTRATION_STUB.registerForCallaback(username, FOLLOWERS_UPDATE);
+
+                        List<String> newFollowers = REGISTRATION_STUB.pullUpdates(username);
+
+                        for (String follower : newFollowers) {
+                            followersList.add(follower);
+                        }
+                        
+                    } catch (RemoteException e) {
+                        System.err.println("Error: " + e.getLocalizedMessage());
+                    } 
+
+                    
                     System.out.println(serverResponse);
-
-                    activeUsername = tokenizedInput.nextToken();
-
                     break;
                 }
 
                 case "logout": {
 
-                    serverOutput.println(keyboardInput);
-                    
-                    try {
-                        CALLBACK_SERVICE.unregisterForCallback(activeUsername, CALLBACK_STUB);
-                    } catch (RemoteException e) {
-                        //TODO: handle exception
+                    if (serverSocket == null) {
+                        System.out.println("Error, not conncted to WinSome");
+                        break;
                     }
-                    
+
+                    if (activeUser == null) {
+                        System.out.println("Error, no one logged in");
+                        break;
+                    }
+
+                    try {
+                        REGISTRATION_STUB.unregisterForCallback(activeUser, FOLLOWERS_UPDATE);
+                    } catch (RemoteException e) {
+                        System.err.println("could not unsubscribe from callback");
+                    }
+
+                    followersList = null;
+                    callbackUpdate = null;
+                    FOLLOWERS_UPDATE = null;
+
+                    Protocol.sendRequest(serverOutput, action);
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
@@ -208,71 +250,85 @@ public class ClientMain {
             
                 case "follow": {
 
-                    String userToFollow = tokenizedInput.nextToken();
+                    String userToFollow = keyboardParser.nextToken();
 
-                    if (tokenizedInput.hasMoreTokens()) {
+                    if (keyboardParser.hasMoreTokens()) {
                         
                         System.out.println("Please use the correct syntax:");
                         System.out.println("          follow <username>");
                         break;
                     }
                     
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+                    Protocol.sendRequest(serverOutput, action, userToFollow);
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
-                    
+                    System.out.println(serverResponse);
                     break;
                 }
 
                 case "unfollow": {
 
-                    String userToUnfollow = tokenizedInput.nextToken();
+                    String userToUnfollow = keyboardParser.nextToken();
 
-                    if (tokenizedInput.hasMoreTokens()) {
+                    if (keyboardParser.hasMoreTokens()) {
                         
                         System.out.println("Please use the correct syntax:");
                         System.out.println("          unfollow <username>");
                         break;
                     }
                     
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+                    Protocol.sendRequest(serverOutput, action, userToUnfollow);
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
+                    // TODO: check request type (errors etc)
+            
+
                     System.out.println(serverResponse);
-
-
                     break;
                 }
 
                 case "post": {
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+
+                    String[] arguments = parseArgs(keyboardInput);
+
+                    String title = arguments[1].substring(1, arguments[1].length() - 1);
+                    String contents = arguments[2].substring(1, arguments[2].length() - 1);
+
+                    /* if (keyboardParser.hasMoreTokens()) {
+                        
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          post <title> <contents>");
+                        break;
+                    } */
+
+                    Protocol.sendRequest(serverOutput, action, title, contents);
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
+                    System.out.println(serverResponse);
                     break;
                 }
 
@@ -281,31 +337,32 @@ public class ClientMain {
                     Integer idPost = null;
 
                     try {
-                        idPost = Integer.parseInt(tokenizedInput.nextToken());
+                        idPost = Integer.parseInt(keyboardParser.nextToken());
                     } catch (NumberFormatException e) {
                         System.out.println("Expecting numeric value:");
                         System.out.println("          delete <idPost>");
                         break;
                     }
 
-                    if (tokenizedInput.hasMoreTokens()) {
+                    if (keyboardParser.hasMoreTokens()) {
                         System.out.println("Please use the correct syntax:");
                         System.out.println("          delete <idPost>");
                         break;
                     }
                     
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+                    Protocol.sendRequest(serverOutput, action, String.valueOf(idPost));
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
+                    System.out.println(serverResponse);
                     break;
                 }
 
@@ -315,32 +372,33 @@ public class ClientMain {
                     Integer vote = null;
 
                     try {
-                        idPost = Integer.parseInt(tokenizedInput.nextToken());
-                        vote = Integer.parseInt(tokenizedInput.nextToken());
+                        idPost = Integer.parseInt(keyboardParser.nextToken());
+                        vote = Integer.parseInt(keyboardParser.nextToken());
                     } catch (NumberFormatException e) {
                         System.out.println("Expecting numeric value:");
                         System.out.println("          rate <idPost> <vote>  (+1 upvote, -1 downvote)");
                         break;
                     }
 
-                    if (tokenizedInput.hasMoreTokens()) {
+                    if (keyboardParser.hasMoreTokens()) {
                         System.out.println("Please use the correct syntax:");
                         System.out.println("          rate <idPost> <vote>");
                         break;
                     }
                     
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+                    Protocol.sendRequest(serverOutput, action, String.valueOf(idPost), String.valueOf(vote));
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
+                    System.out.println(serverResponse);
                     break;
                 }
 
@@ -349,31 +407,32 @@ public class ClientMain {
                     Integer idPost = null;
 
                     try {
-                        idPost = Integer.parseInt(tokenizedInput.nextToken());
+                        idPost = Integer.parseInt(keyboardParser.nextToken());
                     } catch (NumberFormatException e) {
                         System.out.println("Expecting numeric value:");
                         System.out.println("          rewin <idPost>");
                         break;
                     }
 
-                    if (tokenizedInput.hasMoreTokens()) {
+                    if (keyboardParser.hasMoreTokens()) {
                         System.out.println("Please use the correct syntax:");
                         System.out.println("          rewin <idPost>");
                         break;
                     }
                     
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+                    Protocol.sendRequest(serverOutput, action, String.valueOf(idPost));
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
+                    System.out.println(serverResponse);
                     break;
                 }
 
@@ -382,7 +441,7 @@ public class ClientMain {
                     Integer idPost = null;
 
                     try {
-                        idPost = Integer.parseInt(tokenizedInput.nextToken());
+                        idPost = Integer.parseInt(keyboardParser.nextToken());
                     } catch (NumberFormatException e) {
                         System.out.println("Expecting numeric value:");
                         System.out.println("          comment <idPost> <comment>");
@@ -390,68 +449,186 @@ public class ClientMain {
                     }
 
                     
-                    String comment = tokenizedInput.nextToken();
+                    String comment = keyboardParser.nextToken();
 
 
-                    if (tokenizedInput.hasMoreTokens()) {
+                    if (keyboardParser.hasMoreTokens()) {
                         System.out.println("Please use the correct syntax:");
                         System.out.println("          comment <idPost> <comment>");
                         break;
                     }
                     
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+                    Protocol.sendRequest(serverOutput, action, String.valueOf(idPost), comment);
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
+                    System.out.println(serverResponse);
                     break;
                 }
 
                 case "blog": {
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+
+                    if (keyboardParser.hasMoreTokens()) {
+                        System.out.println("Please use the correct syntax:");
+                        System.out.println("          blog");
+                        break;
+                    }
+                    
+                    Protocol.sendRequest(serverOutput, action);
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
+                    System.out.println(serverResponse);
                     break;
                 }
 
                 case "show": {
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
 
-                    String serverResponse = null;
-                    try {
-                        serverResponse = Communication.receiveResponse(serverInput);
-                    } catch (IOException e) {
-                        System.err.println("could not read from socket");
+                    String subcase = keyboardParser.nextToken();
+
+                    switch (subcase) {
+                        
+                        case "feed": {
+
+                            if (keyboardParser.hasMoreTokens()) {
+                                System.out.println("Please use the correct syntax:");
+                                System.out.println("          show feed");
+                                break;
+                            }
+
+                            Protocol.sendRequest(serverOutput, action + subcase);
+
+                            String serverResponse = null;
+                            try {
+                                serverResponse = Protocol.receiveResponse(serverInput);
+                            } catch (IOException e) {
+                                System.err.println("could not read from socket");
+                            }
+        
+                            // TODO: check request type (errors etc)
+                    
+        
+                            System.out.println(serverResponse);
+                            break;
+                        }
+                    
+                        case "post": {
+
+                            Integer idPost = null;
+
+                            try {
+                                idPost = Integer.parseInt(keyboardParser.nextToken());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Expecting numeric value:");
+                                System.out.println("          show post <idPost>");
+                                break;
+                            }
+                        
+                            if (keyboardParser.hasMoreTokens()) {
+                                System.out.println("Please use the correct syntax:");
+                                System.out.println("          show post <idPost>");
+                                break;
+                            }
+
+                            Protocol.sendRequest(serverOutput, action, String.valueOf(idPost));
+                        
+                            String serverResponse = null;
+                            try {
+                                serverResponse = Protocol.receiveResponse(serverInput);
+                            } catch (IOException e) {
+                                System.err.println("could not read from socket");
+                            }
+                        
+                            // TODO: check request type (errors etc)
+                        
+                        
+                            System.out.println(serverResponse);
+                            break;
+                        }
+                        
+                        default: {
+                            System.err.println("Error, uknown action");
+                            break;
+                        }
+                            
                     }
-
-                    System.out.println(serverResponse);
 
                     break;
                 }
 
                 case "list": {
 
-                    String subcase = tokenizedInput.nextToken();
+                    String subcase = keyboardParser.nextToken();
 
                     switch (subcase) {
+
+                        case "users": {
+
+                            if (keyboardParser.hasMoreTokens()) {
+                                System.out.println("Please use the correct syntax:");
+                                System.out.println("          list users");
+                                break;
+                            }
+
+                            Protocol.sendRequest(serverOutput, action + subcase);
+
+                            String serverResponse = null;
+                            try {
+                                serverResponse = Protocol.receiveResponse(serverInput);
+                            } catch (IOException e) {
+                                System.err.println("could not read from socket");
+                            }
+        
+                            // TODO: check request type (errors etc)
+                    
+        
+                            System.out.println(serverResponse);
+                            break;
+                        }
+
+                        case "following": {
+
+                            if (keyboardParser.hasMoreTokens()) {
+                                System.out.println("Please use the correct syntax:");
+                                System.out.println("          list following");
+                                break;
+                            }
+
+                            Protocol.sendRequest(serverOutput, action + subcase);
+
+                            String serverResponse = null;
+                            try {
+                                serverResponse = Protocol.receiveResponse(serverInput);
+                            } catch (IOException e) {
+                                System.err.println("could not read from socket");
+                            }
+        
+                            // TODO: check request type (errors etc)
+                    
+        
+                            System.out.println(serverResponse);
+                            break;
+                        }
+
                         case "followers": {
+
+                            System.out.println("<< showing your followers\n");
 
                             for (String user : followersList) {
                                 System.out.println(user);
@@ -460,40 +637,29 @@ public class ClientMain {
                             break;
                         }
                             
-                        default: {
-
-                            // TODO: move socket reading/writing to communication package
-                            serverOutput.println(keyboardInput);
-
-                            String serverResponse = null;
-                            try {
-                                serverResponse = Communication.receiveResponse(serverInput);
-                            } catch (IOException e) {
-                                System.err.println("could not read from socket");
-                            }
-                        
-                            System.out.println(serverResponse);
-
+                        default:  {
+                            System.err.println("Error, unkown action");
                             break;
-                        }
+                        }  
                     }
-
                     break;
                 }
 
                 case "wallet": {
-                    // TODO: move socket reading/writing to communication package
-                    serverOutput.println(keyboardInput);
+
+                    Protocol.sendRequest(serverOutput, action);
 
                     String serverResponse = null;
                     try {
-                        serverResponse = Communication.receiveResponse(serverInput);
+                        serverResponse = Protocol.receiveResponse(serverInput);
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
 
-                    System.out.println(serverResponse);
+                    // TODO: check request type (errors etc)
+            
 
+                    System.out.println(serverResponse);
                     break;
                 }
 

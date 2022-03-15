@@ -1,6 +1,6 @@
 package server.socialnetwork;
 
-public enum WinSomeUserStatus {
+public enum UserStatus {
     ONLINE,
     OFFLINE
 }

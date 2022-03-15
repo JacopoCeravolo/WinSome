@@ -5,29 +5,28 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
-public class WinSomeUser {
+public class User {
     
     private Integer uniqueID;
 
     private String username;
     private String password;
 
-    private WinSomeUserStatus status;
+    private UserStatus status;
 
     private ArrayList<String> tagsList;
-    private HashMap<String, WinSomeUser> followers;
-    private HashMap<String, WinSomeUser> following;
+    private HashMap<String, User> followers;
+    private HashMap<String, User> following;
 
-    private HashMap<Integer, WinSomePost> blog;
+    private HashMap<Integer, Post> blog;
 
-    private WinSomeWallet wallet;
+    private Wallet wallet;
     
     
     // Constructor
 
-    public WinSomeUser(String username, String password, List<String> tagsList){
+    public User(String username, String password, List<String> tagsList){
 
         this.username = username;
         this.password = password; // TODO: encryption
@@ -43,7 +42,7 @@ public class WinSomeUser {
 
         this.blog = new HashMap<>();
 
-        this.wallet = new WinSomeWallet();
+        this.wallet = new Wallet();
 
     }
 
@@ -52,14 +51,14 @@ public class WinSomeUser {
     }
 
 
-    public void followUser(WinSomeUser user) {
+    public void followUser(User user) {
         
         following.putIfAbsent(user.getUserName(), user);
         user.getFollowers().putIfAbsent(this.username, this);
 
     }
 
-    public WinSomeWallet getWallet() {
+    public Wallet getWallet() {
         return this.wallet;
     }
     // Getters
@@ -76,19 +75,19 @@ public class WinSomeUser {
         return this.password;
     }
 
-    public WinSomeUserStatus getUserStatus() {
+    public UserStatus getUserStatus() {
         return this.status;
     }
 
-    public void setUserStatus(WinSomeUserStatus status) {
+    public void setUserStatus(UserStatus status) {
         this.status = status;
     }
 
-    public HashMap<Integer, WinSomePost> getBlog() {
+    public HashMap<Integer, Post> getBlog() {
         return this.blog;
     }
 
-    public HashMap<String, WinSomeUser> getFollowers() {
+    public HashMap<String, User> getFollowers() {
         return this.followers;
     }
 
@@ -96,7 +95,7 @@ public class WinSomeUser {
         return this.tagsList;
     }
 
-    public HashMap<String, WinSomeUser> getFollowing() {
+    public HashMap<String, User> getFollowing() {
         return this.following;
     }
 

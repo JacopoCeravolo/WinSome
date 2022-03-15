@@ -1,43 +1,45 @@
 package server.threads;
 
-import server.rmi.CallbackRegistration;
+
+import server.rmi.RMIRegistration;
 import server.socialnetwork.*;
 
+import server.socialnetwork.exceptions.InvalidPasswordException;
+import server.socialnetwork.exceptions.PostNotFoundException;
+import server.socialnetwork.exceptions.UnauthorizedOperationException;
+import server.socialnetwork.exceptions.UserNotFoundException;
 import shared.communication.*;
-import shared.rmi.CallbackRegistrationInterface;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Scanner;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionManager implements Runnable{
 
     private final static String DELIMITER = " ";
+    private final static String PROMPT = "<< ";
+    private final static String ERROR = "ERROR: ";
 
     private Socket clientConnection;
     private AtomicBoolean exitSignal;
     
     private WinSomeNetwork network;
-    private CallbackRegistration FOLLOWER_UPDATES;
+    private RMIRegistration STUB;
 
     public ConnectionManager(Socket clientConnection, WinSomeNetwork network, 
-        AtomicBoolean exitSignal, CallbackRegistration FOLLOWER_UPDATES) {
+        AtomicBoolean exitSignal, RMIRegistration STUB) {
         
         this.clientConnection = clientConnection;
         this.network = network;
         this.exitSignal = exitSignal;
-        this.FOLLOWER_UPDATES = FOLLOWER_UPDATES;
+        this.STUB = STUB;
     }
 
     @Override
@@ -49,14 +51,384 @@ public class ConnectionManager implements Runnable{
              PrintWriter clientOutput = new PrintWriter(clientConnection.getOutputStream(), true)) {
 
             // Connection variables
-            WinSomeUser activeUser = null;
+            User activeUser = null;
             Boolean endConnection = false;
             String username = null;
             String password = null;
 
             while (!endConnection && !exitSignal.get()) {
+
+                String request = Protocol.receiveRequest(clientInput);
+                StringBuilder response = new StringBuilder(PROMPT);
+
+                System.out.println(request);
+
+                StringTokenizer requestParser = new StringTokenizer(request, Protocol.DELIMITER);
+
+                String action = requestParser.nextToken();
+
+                switch (action) {
+
+                    case "login": {
+
+                        if (username != null || password != null) {
+                            response.append(username + " is currently logged in");
+                            break;
+                        }
+
+                        username = requestParser.nextToken();
+                        password = requestParser.nextToken();
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        try {
+                            activeUser = network.login(username, password);
+                        } catch (UserNotFoundException e) {
+                            response.append(ERROR + "user not found");
+                            break;
+                        } catch (InvalidPasswordException e) {
+                            response.append(ERROR + "invalid password");
+                            break;
+                        }
+
+                        response.append("user " +username+ " logged in");
+                        break;
+                    }
+
+                    case "logout": {
+
+                        if (username == null || password == null) {
+                            response.append(ERROR + "no user logged in");
+                            break;
+                        }
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        network.logout(activeUser);
+                        endConnection = true;
+
+                        response.append("user "+username+" logged out");
+                        break;
+                    }
+
+                    case "listusers": {
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        response.append("showing users with same tags:\n");
+
+                        ArrayList<User> usersList = network.listUsers(activeUser);
+
+                        for (User user : usersList) {
+                            response.append(user.toString());
+                        }
+
+                        break;
+                    }
+
+                    case "listfollowing": {
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        response.append("users you are following:\n");
+
+                        ArrayList<User> followingList = (ArrayList<User>)
+                            activeUser.getFollowing().values();
+
+                        for (User user : followingList) {
+                            response.append(user.toString());
+                        }
+
+                        break;
+                    }
+
+                    case "follow": {
+
+                        String toFollow = requestParser.nextToken();
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        System.err.println("Checking username");
+                        if (toFollow.equals(activeUser.getUserName())) {
+                            response.append(ERROR + "cannot follow yourself");
+                            break;
+                        }
+
+                        System.err.println("Trying follow");
+                        try {
+                            network.followUser(activeUser, toFollow);
+                        } catch (UserNotFoundException e) {
+                            response.append(ERROR + "user not found");
+                            break;
+                        }
+                        
+                        System.err.println("Trying callback");
+                        try {
+                            STUB.followerUpdate(toFollow, "add"+":"+activeUser.toString());
+                        } catch (RemoteException e) {
+                            System.err.println(e.getMessage());
+                            System.err.println(e.getStackTrace());
+                            System.err.println(e.getCause());
+                            response.append(ERROR + "unable to send notification");
+                            break;
+                        } catch (NullPointerException e) {
+                            System.err.println(e.getMessage());
+                            response.append(ERROR + "cannote find user");
+                            break;
+                        }
+                        
+                        response.append("following user "+toFollow);
+                        System.err.println("Replying -> " + response);
+                        break;
+                    }
+
+                    case "unfollow": {
+
+                        String toUnfollow = requestParser.nextToken();
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        if (toUnfollow.equals(activeUser.getUserName())) {
+                            response.append(ERROR + "cannot unfollow yourself");
+                            break;
+                        }
+
+                        try {
+                            network.unfollowUser(activeUser, toUnfollow);
+                        } catch (UserNotFoundException e) {
+                            response.append(ERROR + "user not found");
+                            break;
+                        }
+
+                        try {
+                            STUB.followerUpdate(toUnfollow, "remove"+":"+activeUser.toString());
+                        } catch (RemoteException e) {
+                            System.err.println(e.getMessage());
+                            System.err.println(e.getStackTrace());
+                            System.err.println(e.getCause());
+                            response.append(ERROR + "unable to send notification");
+                            break;
+                        }
+                        
+
+                        response.append("user "+toUnfollow+ " unfollowed");
+                        break;
+                    }
+
+                    case "post": {
+
+                        String title = requestParser.nextToken();
+                        String contents = requestParser.nextToken();
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        Post newPost = new Post(activeUser, title, contents);
+
+                        Integer postID = network.createPost(activeUser, newPost);
+                        
+                        response.append("post (id="+postID+") created");
+                        break;
+                    }
+
+                    case "blog": {
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        response.append("showing your blog:\n");
+
+                        HashMap<Integer, Post> blog = activeUser.getBlog();
+
+                        for (Post post : blog.values()) {
+                            response.append(post.toString());
+                        }
+
+                        break;
+                    }
+
+                    case "showfeed": {
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        response.append("showing your feed:\n");
+
+                        ArrayList<Post> feed = network.showFeed(activeUser);
+        
+                        for (Post post : feed) {
+                            response.append(post.toString());
+                        }
+
+                        break;
+                    }
+
+                    case "showpost": {
+
+                        Integer postID = Integer.parseInt(requestParser.nextToken());
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
                 
-                String requestString = clientInput.readLine();
+                        Post post = null;
+                        try {
+                            post = network.showPost(postID);
+                        } catch (PostNotFoundException e) {
+                            response.append(ERROR + "post (id="+postID+") not found");
+                            break;
+                        }
+
+                        response.append("showing post (id="+postID+")\n");
+                        response.append(post.toString());
+                        break;
+                    }
+
+                    case "delete": {
+
+                        Integer postID = Integer.parseInt(requestParser.nextToken());
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        Post post = null;
+
+                        try {
+                            post = network.deletePost(activeUser, postID);
+                        } catch (PostNotFoundException e) {
+                            response.append(ERROR + "post (id="+postID+") not found");
+                            break;
+                        } catch (UnauthorizedOperationException e) {
+                            response.append(ERROR + "unauthorized to delete post (id="+postID+")");
+                            break;
+                        }
+
+                        response.append("post (id="+postID+") deleted");
+                        break;
+                    }
+
+                    case "rewin": {
+                        
+                        Integer postID = Integer.parseInt(requestParser.nextToken());
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        try {
+                            network.rewinPost(activeUser, postID);
+                        } catch (PostNotFoundException e) {
+                            response.append(ERROR + "post (id="+postID+") not found");
+                            break;
+                        }
+
+                        response.append("post (id="+postID+") added to blog");
+                        break;
+                    }
+
+                    case "rate": {
+
+                        Integer postID = Integer.parseInt(requestParser.nextToken());
+                        Integer vote = Integer.parseInt(requestParser.nextToken());
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        try {
+                            network.ratePost(activeUser, postID, vote);
+                        } catch (PostNotFoundException e) {
+                            response.append(ERROR + "post (id="+postID+") not found");
+                            break;
+                        } catch (UnauthorizedOperationException e) {
+                            response.append(ERROR + "unauthorized to vote post (id="+postID+")");
+                            break;
+                        }
+                        
+                        response.append(ERROR + "voted post (id="+postID+")");
+
+                        break;
+                    }
+
+                    case "comment": {
+
+                        Integer postID = Integer.parseInt(requestParser.nextToken());
+                        String comment = requestParser.nextToken();
+
+                        if (requestParser.hasMoreTokens()) {
+                            response.append(ERROR + "too many arguments");
+                            break;
+                        }
+
+                        try {
+                            network.commentPost(activeUser, postID, comment);
+                        } catch (PostNotFoundException e) {
+                            response.append(ERROR + "post (id="+postID+") not found");
+                            break;
+                        } catch (UnauthorizedOperationException e) {
+                            response.append(ERROR + "unauthorized to comment post (id="+postID+")");
+                            break;
+                        }
+
+                        response.append("added comment to post (id="+postID+")");
+                        break;
+                    }
+
+                    case "wallet": {
+
+                        if (requestParser.hasMoreTokens()) {
+
+                            response.append("IN PROGRESS (wallet btc)");
+
+                        } else {
+                    
+                            Wallet wallet = activeUser.getWallet();
+                            response.append("your current wallet history:\n");
+                            response.append(wallet.viewHistory());
+                        }
+
+                        break;
+                    }
+
+                    default: {
+                        System.err.println("Unrecognized client request");
+                        request += ERROR + " unrecognized request";
+                        break;
+                    }
+                }
+
+                Protocol.sendResponse(clientOutput, response.toString());
+                response.setLength(0);
+                /* String requestString = clientInput.readLine();
                 StringTokenizer requestLine = new StringTokenizer(requestString, DELIMITER);
                 StringBuilder responseLine = new StringBuilder();
 
@@ -167,7 +539,7 @@ public class ConnectionManager implements Runnable{
                             break;
                         }
 
-                        FOLLOWER_UPDATES.followerUpdate(toFollow, "add"+":"+activeUser.getUserName());
+                        CALLBACK.followerUpdate(toFollow, "add"+":"+activeUser.getUserName());
 
                         responseLine.append("following user "+toFollow);
 
@@ -185,7 +557,7 @@ public class ConnectionManager implements Runnable{
                             break;
                         }
 
-                        FOLLOWER_UPDATES.followerUpdate(toUnfollow, "remove"+":"+activeUser.getUserName());
+                        CALLBACK.followerUpdate(toUnfollow, "remove"+":"+activeUser.getUserName());
 
                         responseLine.append("user "+toUnfollow+ " unfollowed");
 
@@ -357,11 +729,10 @@ public class ConnectionManager implements Runnable{
                         break;
                 }
 
-                /* System.out.println(responseLine);
-                clientOutput.println(responseLine); */
+                
                 Communication.sendResponse(clientOutput, responseLine.toString());
                 responseLine.setLength(0); // empty stringbuilder
-                
+                 */
             }
             
         } catch (IOException e) {

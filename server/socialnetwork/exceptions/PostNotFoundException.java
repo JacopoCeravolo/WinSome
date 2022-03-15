@@ -1,4 +1,4 @@
-package server.socialnetwork;
+package server.socialnetwork.exceptions;
 public class PostNotFoundException extends Exception {
     
     public PostNotFoundException() {

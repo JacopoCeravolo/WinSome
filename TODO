@@ -1,22 +1,24 @@
 REQUEST
 
-type:length:parameters
+action:length:parameters
 
 
 RESPONSE
 
-code:length
+phrase:length
 message
 
 
 TODO:
 
 [] when deleting a post remove from all rewinners
-[] callback for list followers
-[] wallet class
-[] add timestamp to user and posts
-[] should be packing requests or send them raw?
+[X] callback for list followers
+[X] add timestamp to user and posts
+[X] should be packing requests or send them raw?
 [] parse comments and posts between " "
+[] fix bugs in callback methods when more registration from same client
+[] sort feed by timestamp
+[] correct serialization of id, user and tag map, but not post map
 
 
 

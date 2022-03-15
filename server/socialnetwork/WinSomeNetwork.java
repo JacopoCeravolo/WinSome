@@ -1,71 +1,63 @@
 package server.socialnetwork;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.lang.reflect.Type;
+import com.google.gson.reflect.TypeToken;
+
+import server.socialnetwork.exceptions.InvalidPasswordException;
+import server.socialnetwork.exceptions.PostNotFoundException;
+import server.socialnetwork.exceptions.UnauthorizedOperationException;
+import server.socialnetwork.exceptions.UserNotFoundException;
+
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashMap;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WinSomeNetwork {
-    
-    private AtomicInteger userID;
+
     private AtomicInteger postID;
 
-    private ConcurrentHashMap<String, WinSomeUser> usersMap;
-    private ConcurrentHashMap<Integer, WinSomePost> postsMap;
-    private ConcurrentHashMap<String, ArrayList<WinSomeUser>> tagsMap;
+    private ConcurrentHashMap<String, User> usersMap;
+    private ConcurrentHashMap<Integer, Post> postsMap;
+    private ConcurrentHashMap<String, List<User>> tagsMap;
 
     public WinSomeNetwork() {
-        userID = new AtomicInteger(0);
         postID = new AtomicInteger(0);
         usersMap = new ConcurrentHashMap<>();
         postsMap = new ConcurrentHashMap<>();
         tagsMap = new ConcurrentHashMap<>();
     }
 
-    // TODO: Temporary
-    public void register(WinSomeUser user) {
+    
 
-        user.setUserID(userID.incrementAndGet());
-
-        ArrayList<String> tags = (ArrayList<String>)user.getTags();
-        System.out.println(tags);
-        for (String tag : tags) {
-            tagsMap.putIfAbsent(tag, new ArrayList<>());
-            tagsMap.get(tag).add(user);
-        }
-        
-        usersMap.put(user.getUserName(), user);
-    }
-
-    public WinSomeUser login(String username, String password) 
+    public User login(String username, String password)
         throws UserNotFoundException, InvalidPasswordException {
     
-        WinSomeUser user = usersMap.get(username);
+        User user = usersMap.get(username);
                         
         if (user == null) throw new UserNotFoundException();
         
         if (!password.equals(user.getPassword())) throw new InvalidPasswordException();
         
-        user.setUserStatus(WinSomeUserStatus.ONLINE);
+        user.setUserStatus(UserStatus.ONLINE);
 
         return user;
     }
 
-    public void logout(WinSomeUser user) {
-            
-        user.setUserStatus(WinSomeUserStatus.OFFLINE);
+    public void logout(User user) {
+        user.setUserStatus(UserStatus.OFFLINE);
     }
     
-    public ArrayList<WinSomeUser> listUsers(WinSomeUser user) {
+    public ArrayList<User> listUsers(User user) {
         
         StringBuilder format = new StringBuilder("NAME\t:\tFOLLOWERS\t:\tFOLLOWING\t:\tTAGS\n");
-        ArrayList<WinSomeUser> usersList = new ArrayList<>();
+        ArrayList<User> usersList = new ArrayList<>();
 
         for (String tag : user.getTags()) {
-            for (WinSomeUser u : tagsMap.get(tag)) {
+            for (User u : tagsMap.get(tag)) {
                 
                 if (u.equals(user) || usersList.contains(u)) continue;
 
@@ -77,10 +69,10 @@ public class WinSomeNetwork {
         return usersList;
     }
 
-    public void followUser(WinSomeUser user, String username) 
+    public void followUser(User user, String username)
         throws UserNotFoundException {
 
-        WinSomeUser toFollow = usersMap.get(username);
+        User toFollow = usersMap.get(username);
 
         if (toFollow == null) throw new UserNotFoundException();
 
@@ -89,10 +81,10 @@ public class WinSomeNetwork {
         
     }
 
-    public void unfollowUser(WinSomeUser user, String username) 
+    public void unfollowUser(User user, String username)
         throws UserNotFoundException {
 
-            WinSomeUser toUnfollow = usersMap.get(username);
+            User toUnfollow = usersMap.get(username);
 
             if (toUnfollow == null) throw new UserNotFoundException();
 
@@ -101,7 +93,7 @@ public class WinSomeNetwork {
 
     }
 
-    public Integer createPost(WinSomeUser user, WinSomePost post) {
+    public Integer createPost(User user, Post post) {
 
         Integer postNum = postID.incrementAndGet();
 
@@ -112,24 +104,24 @@ public class WinSomeNetwork {
         return postNum;
     }
 
-    public WinSomePost getPost(Integer postID) 
+    public Post showPost(Integer postID)
         throws PostNotFoundException {
 
-        WinSomePost post = postsMap.get(postID);
+        Post post = postsMap.get(postID);
         
         if (post == null) throw new PostNotFoundException();
         
         return post;
     }
 
-    // Should return an ordered set
-    public ArrayList<WinSomePost> getFeed(WinSomeUser user) {
+    // TODO: Should return an ordered set
+    public ArrayList<Post> showFeed(User user) {
 
-        ArrayList<WinSomePost> feed = new ArrayList<>();
-        HashMap<String, WinSomeUser> following = user.getFollowing();
+        ArrayList<Post> feed = new ArrayList<>();
+        HashMap<String, User> following = user.getFollowing();
         
-        for (WinSomeUser u : following.values()) {
-            for (WinSomePost post : u.getBlog().values()) {
+        for (User u : following.values()) {
+            for (Post post : u.getBlog().values()) {
                 feed.add(post);
             }
         }
@@ -137,10 +129,10 @@ public class WinSomeNetwork {
         return feed;
     }
 
-    public WinSomePost deletePost(WinSomeUser user, Integer postID) 
+    public Post deletePost(User user, Integer postID)
         throws PostNotFoundException, UnauthorizedOperationException {
 
-            WinSomePost post = postsMap.get(postID);
+            Post post = postsMap.get(postID);
 
             if (post == null) throw new PostNotFoundException();
 
@@ -152,10 +144,10 @@ public class WinSomeNetwork {
             return post;
     }
 
-    public void rewinPost(WinSomeUser user, Integer postID)
+    public void rewinPost(User user, Integer postID)
         throws PostNotFoundException {
 
-            WinSomePost post = postsMap.get(postID);
+            Post post = postsMap.get(postID);
 
             if (post == null) throw new PostNotFoundException();
 
@@ -165,14 +157,14 @@ public class WinSomeNetwork {
             user.getBlog().put(postID, post);
     }
 
-    public void ratePost(WinSomeUser user, Integer postID, Integer vote)
+    public void ratePost(User user, Integer postID, Integer vote)
         throws PostNotFoundException, UnauthorizedOperationException {
 
-            WinSomePost post = postsMap.get(postID);
+            Post post = postsMap.get(postID);
 
             if (post == null) throw new PostNotFoundException();
 
-            if (!this.getFeed(user).contains(post)) throw new UnauthorizedOperationException();
+            if (!this.showFeed(user).contains(post)) throw new UnauthorizedOperationException();
 
             if (vote > 0) {
                 post.upvotePost(user);
@@ -182,51 +174,45 @@ public class WinSomeNetwork {
             
     }
 
-    public void commentPost(WinSomeUser user, Integer postID, String comment)
+    public void commentPost(User user, Integer postID, String comment)
         throws PostNotFoundException, UnauthorizedOperationException {
 
-            WinSomePost post = postsMap.get(postID);
+            Post post = postsMap.get(postID);
 
             if (post == null) throw new PostNotFoundException();
             
 
-            if (!this.getFeed(user).contains(post)) throw new UnauthorizedOperationException();
+            if (!this.showFeed(user).contains(post)) throw new UnauthorizedOperationException();
 
-            post.getComments().add(new WinSomeComment(user, comment));
+            post.getComments().add(new Comment(user, comment));
             
     }
 
-    public void addUserToTagList(WinSomeUser user, String tag) {
-        tagsMap.putIfAbsent(tag, new ArrayList<>());
-
-        tagsMap.get(tag).add(user);
-    }
-
-    public ConcurrentHashMap<String, WinSomeUser> getUsersMap() {
+    public ConcurrentHashMap<String, User> getUsersMap() {
         return usersMap;
     }
 
-    public void setUsersMap(ConcurrentHashMap<String, WinSomeUser> usersMap) {
-        this.usersMap = usersMap;
-    }
-
-    public ConcurrentHashMap<Integer, WinSomePost> getPostsMap() {
+    public ConcurrentHashMap<Integer, Post> getPostsMap() {
         return postsMap;
     }
 
-    public void setPostsMap(ConcurrentHashMap<Integer, WinSomePost> postsMap) {
-        this.postsMap = postsMap;
-    }
-
-    public ConcurrentHashMap<String, ArrayList<WinSomeUser>> getTagsMap() {
+    public ConcurrentHashMap<String, List<User>> getTagsMap() {
         return tagsMap;
     }
 
-    public void setTagsMap(ConcurrentHashMap<String, ArrayList<WinSomeUser>> tagsMap) {
-        this.tagsMap = tagsMap;
+    public String serialize() {
+        
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        
+        String postIdJson = gson.toJson(postID);
+
+        String usersMapJson = gson.toJson(usersMap);
+        String postsMapJson = gson.toJson(postsMap);
+        String tagsMapJson = gson.toJson(tagsMap);
+
+        return postIdJson + "\n" 
+            + usersMapJson + "\n"
+            + postsMapJson + "\n" 
+            + tagsMapJson + "\n";
     }
-
-    
-
-
 }

@@ -1,18 +1,6 @@
 package server;
 
-import server.rmi.*;
-import server.socialnetwork.*;
-import server.threads.*;
-
-
-import shared.rmi.*;
-import shared.utils.*;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.AlreadyBoundException;
@@ -20,23 +8,24 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Scanner;
-import java.util.StringTokenizer;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.plaf.synth.Region;
+
+import server.rmi.RMIRegistration;
+import server.socialnetwork.WinSomeNetwork;
+import server.threads.ConnectionManager;
+import server.threads.RewardsManager;
+import server.threads.Serializer;
+
+import shared.rmi.RMIRegistrationInterface;
 
 
 public class ServerMain {
     
-    private final static long KEEP_ALIVE = 12 * 60000;
+    private final static long SERIALIZE_TIME = 2 * 60000;
 
     private final static int LISTEN_PORT = 6789;
     private final static int RMI_PORT = 6889;
@@ -54,33 +43,41 @@ public class ServerMain {
     private final static LinkedList<Socket> connectedSockets = new LinkedList<>();
 
     private final static RMIRegistration REGISTRATION = new RMIRegistration(network);
-    private final static CallbackRegistration FOLLOWER_UPDATES = new CallbackRegistration();
+    // private final static CallbackRegistration FOLLOWER_UPDATES = new CallbackRegistration();
     
 
     public static void main(String[] args) {
 
+
+
         Thread rewardManager = new Thread(new RewardsManager(network, exitSignal));
         rewardManager.start();
 
-        RMIRegistrationInterface REGISTRATION_STUB = null;
-        CallbackRegistrationInterface CALLBACK_STUB = null;
+        Thread serializer = new Thread(new Serializer(network, exitSignal));
+        serializer.start();
+
+        RMIRegistrationInterface STUB = null;
+        //CallbackRegistrationInterface CALLBACK_STUB = null;
         Registry RMI_REGISTRY = null;
-        Registry CALLBACK_REGISTRY = null;
+        //Registry CALLBACK_REGISTRY = null;
 
         // RMI
         try {
 
-            REGISTRATION_STUB = (RMIRegistrationInterface) UnicastRemoteObject.exportObject(REGISTRATION, 0);
+            STUB = (RMIRegistrationInterface) UnicastRemoteObject.exportObject(REGISTRATION, 0);
+           
             LocateRegistry.createRegistry(RMI_PORT);
             RMI_REGISTRY = LocateRegistry.getRegistry(RMI_PORT);
-            RMI_REGISTRY.rebind(RMI_SERVICE_NAME, REGISTRATION_STUB);
+            RMI_REGISTRY.rebind(RMI_SERVICE_NAME, STUB);
+
+            
 
         } catch (RemoteException e) {
             System.err.println("Error: " + e.getMessage());
         }
 
         // CALLBACK
-        try {
+        /* try {
 
             CALLBACK_STUB = (CallbackRegistrationInterface) UnicastRemoteObject.exportObject(FOLLOWER_UPDATES, 0);
             LocateRegistry.createRegistry(CALLBACK_PORT);
@@ -91,16 +88,19 @@ public class ServerMain {
             System.err.println("Error: " + e.getMessage());
         } catch (AlreadyBoundException e) {
             System.err.println("Error: " + e.getMessage());
-        }
+        } */
         
         
         try (ServerSocket listenSocket = new ServerSocket(LISTEN_PORT)) {
 
             long startTime = System.currentTimeMillis();
-            while ((KEEP_ALIVE - Math.abs(System.currentTimeMillis() - startTime)) > 0) {
+            long lastSerialization = startTime;
+            while (true) {
+
                 Socket newConnection = listenSocket.accept();
                 connectedSockets.add(newConnection);
-                threadpool.submit(new ConnectionManager(newConnection, network, exitSignal, FOLLOWER_UPDATES));
+                threadpool.submit(new ConnectionManager(newConnection, network, exitSignal, REGISTRATION));
+
             }
 
         } catch (IOException e) {
@@ -119,6 +119,7 @@ public class ServerMain {
             threadpool.shutdown();
 
             try {
+                serializer.join();
                 rewardManager.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();

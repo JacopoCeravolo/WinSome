@@ -1,21 +1,19 @@
 package server.socialnetwork;
 
-import java.util.Date;
-
-public class WinSomeComment {
+public class Comment {
     
-    private WinSomeUser author;
+    private User author;
     private long timeStamp;
 
     private String contents; 
     
-    public WinSomeComment(WinSomeUser author, String contents) {
+    public Comment(User author, String contents) {
         this.author = author;
         this.timeStamp = System.currentTimeMillis();
         this.contents = contents;
     }
 
-    public WinSomeUser getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
