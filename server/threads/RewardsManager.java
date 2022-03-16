@@ -1,5 +1,9 @@
 package server.threads;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,16 +12,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import server.socialnetwork.*;
 import server.socialnetwork.Comment;
 
+
 public class RewardsManager implements Runnable {
 
     private final long AWAIT_TIME = 1 * 60000;
     private WinSomeNetwork network;
     private AtomicBoolean exitSignal;
 
+    private DatagramSocket socket;
+    private InetAddress group;
+    private byte[] buf;
+
 
     public RewardsManager(WinSomeNetwork network, AtomicBoolean exitSignal) {
         this.network = network;
         this.exitSignal = exitSignal;
+    }
+
+    public void multicast(
+      String multicastMessage) throws IOException {
+        socket = new DatagramSocket();
+        // if (socket == null) System.err.println("socket is null");
+        group = InetAddress.getByName("230.0.0.0");
+        buf = multicastMessage.getBytes();
+
+        DatagramPacket packet 
+          = new DatagramPacket(buf, buf.length, group, 8888);
+        //System.out.println("[REWARDS MANAGER] sending to socket " + 8888 + socket.getInetAddress() + " at group " + group);
+        socket.send(packet);
+        //System.out.println("[REWARDS MANAGER] sent update " + multicastMessage);
+        socket.close();
     }
 
     @Override
@@ -29,7 +53,7 @@ public class RewardsManager implements Runnable {
             
             if (Math.abs(last_update - System.currentTimeMillis()) < AWAIT_TIME) continue;
 
-            System.out.println("[REWARD MAN] calculating rewards");
+            System.out.println("[REWARDS MANAGER] calculating rewards");
             ConcurrentHashMap<String, User> usersMap = network.getUsersMap();
 
             synchronized (usersMap) {
@@ -56,6 +80,15 @@ public class RewardsManager implements Runnable {
                     }
                 }
             }
+
+            try {
+                multicast("update");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            System.out.println("[REWARDS MANAGER] sent wallet updates");
 
             last_update = System.currentTimeMillis();
         }

@@ -28,6 +28,7 @@ public class ConnectionManager implements Runnable{
     private final static String ERROR = "ERROR: ";
 
     private Socket clientConnection;
+    private int port;
     private AtomicBoolean exitSignal;
     
     private WinSomeNetwork network;
@@ -40,12 +41,15 @@ public class ConnectionManager implements Runnable{
         this.network = network;
         this.exitSignal = exitSignal;
         this.STUB = STUB;
+        this.port = clientConnection.getPort();
     }
 
     @Override
     public void run() {
 
-        System.out.println("New connection on port " + clientConnection.getPort());
+        String CONNECTION_NO = "[PORT "+port+"]";
+
+        // System.out.println("New connection on port " + clientConnection.getPort());
         
         try (BufferedReader clientInput = new BufferedReader(new InputStreamReader(clientConnection.getInputStream()));
              PrintWriter clientOutput = new PrintWriter(clientConnection.getOutputStream(), true)) {
@@ -61,7 +65,7 @@ public class ConnectionManager implements Runnable{
                 String request = Protocol.receiveRequest(clientInput);
                 StringBuilder response = new StringBuilder(PROMPT);
 
-                System.out.println(request);
+                System.out.println(CONNECTION_NO + " received -> " + request);
 
                 StringTokenizer requestParser = new StringTokenizer(request, Protocol.DELIMITER);
 
@@ -163,21 +167,20 @@ public class ConnectionManager implements Runnable{
                             break;
                         }
 
-                        System.err.println("Checking username");
+
                         if (toFollow.equals(activeUser.getUserName())) {
                             response.append(ERROR + "cannot follow yourself");
                             break;
                         }
 
-                        System.err.println("Trying follow");
+
                         try {
                             network.followUser(activeUser, toFollow);
                         } catch (UserNotFoundException e) {
                             response.append(ERROR + "user not found");
                             break;
                         }
-                        
-                        System.err.println("Trying callback");
+
                         try {
                             STUB.followerUpdate(toFollow, "add"+":"+activeUser.toString());
                         } catch (RemoteException e) {
@@ -193,7 +196,7 @@ public class ConnectionManager implements Runnable{
                         }
                         
                         response.append("following user "+toFollow);
-                        System.err.println("Replying -> " + response);
+                    
                         break;
                     }
 
@@ -374,7 +377,7 @@ public class ConnectionManager implements Runnable{
                             break;
                         }
                         
-                        response.append(ERROR + "voted post (id="+postID+")");
+                        response.append("voted post (id="+postID+")");
 
                         break;
                     }

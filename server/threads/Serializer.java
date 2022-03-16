@@ -31,11 +31,11 @@ public class Serializer implements Runnable {
 
             if (Math.abs(last_update - System.currentTimeMillis()) < AWAIT_TIME) continue;
 
-            System.out.println("[SERIALIZER] starting serialization");
+            System.out.println("[BACKUP MANAGER] starting serialization (not yet implemented)");
 
-            String serializedNetwork = network.serialize();
+            // String serializedNetwork = network.serialize();
 
-            System.out.println(serializedNetwork);
+            // System.out.println(serializedNetwork);
 
             /* // TODO: should be synchronized
             System.out.println("[SERIALIZER] serializing post ID");

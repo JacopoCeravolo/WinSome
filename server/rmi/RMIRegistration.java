@@ -47,6 +47,8 @@ public class RMIRegistration implements RMIRegistrationInterface {
                 network.getTagsMap().get(tag).add(newUser);
             }
         }
+
+        System.out.println("[REGISTRATION] user "+username+" registered");
     }
 
     @Override
@@ -55,7 +57,7 @@ public class RMIRegistration implements RMIRegistrationInterface {
         
         if (!registeredClients.containsKey(client)) {
             registeredClients.put(client, clientInterface);
-            System.out.println("Client " +client+ " registered for callback");
+            System.out.println("[CALLBACK] client " +client+ " registered for callback");
         }
     }
 
@@ -65,24 +67,24 @@ public class RMIRegistration implements RMIRegistrationInterface {
         
         if (registeredClients.containsKey(client)) {
             registeredClients.remove(client);
-            System.out.println("Client " +client+ " unregistered");
+            System.out.println("[CALLBACK] client " +client+ " unregistered");
         } else {
-            System.out.println("Client " +client+ " not found");
+            System.out.println("[CALLBACK] client " +client+ " not found");
         }
     }
 
     public void followerUpdate(String client, String update) throws RemoteException {
-        System.out.println("Notifying client " +client+ " of update : " + update);
+        System.out.println("[CALLBACK] notifying client " +client+ " of update : " + update);
         
         if (registeredClients.containsKey(client)) { // Client is online
             registeredClients.get(client).notifyEvent(update);
-            System.out.println("Client " +client+ " notified");
+            System.out.println("[CALLBACK] client " +client+ " notified");
         } else {
 
             pendingUpdates.putIfAbsent(client, new ArrayList<>());
             pendingUpdates.get(client).add(update);
 
-            System.out.println("Client offline, added pending update " + update);
+            System.out.println("[CALLBACK] client offline, added pending update " + update);
         }
     }
 
@@ -90,9 +92,7 @@ public class RMIRegistration implements RMIRegistrationInterface {
 
         List<String> newFollowers = new ArrayList<>();
 
-        if (!pendingUpdates.containsKey(client)) {
-            System.err.println("Cannot find client");
-        } else {
+        if (pendingUpdates.containsKey(client)) {
 
             Iterator<String> newUpdates = pendingUpdates.get(client).iterator();
             
@@ -103,7 +103,7 @@ public class RMIRegistration implements RMIRegistrationInterface {
                     newFollowers.add(tokens[1]);
                 }
             }
-            System.out.println("Added updates");
+            System.out.println("[CALLBACK] client "+client+" pulled recent updates");
         }
 
         return newFollowers;

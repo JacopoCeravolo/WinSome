@@ -1,9 +1,9 @@
 package server.socialnetwork;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
+// import com.google.gson.Gson;
+// import com.google.gson.GsonBuilder;
+// import java.lang.reflect.Type;
+// import com.google.gson.reflect.TypeToken;
 
 import server.socialnetwork.exceptions.InvalidPasswordException;
 import server.socialnetwork.exceptions.PostNotFoundException;
@@ -202,7 +202,7 @@ public class WinSomeNetwork {
 
     public String serialize() {
         
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        /* Gson gson = new GsonBuilder().setPrettyPrinting().create();
         
         String postIdJson = gson.toJson(postID);
 
@@ -213,6 +213,7 @@ public class WinSomeNetwork {
         return postIdJson + "\n" 
             + usersMapJson + "\n"
             + postsMapJson + "\n" 
-            + tagsMapJson + "\n";
+            + tagsMapJson + "\n"; */
+            return "";
     }
 }

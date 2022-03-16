@@ -110,7 +110,6 @@ public class User {
             userFormatted += tag + ", ";
         }
 
-        userFormatted += "\n";
         
         return userFormatted;
     }

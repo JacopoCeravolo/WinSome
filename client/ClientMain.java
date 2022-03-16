@@ -199,6 +199,9 @@ public class ClientMain {
                         System.err.println("Error: " + e.getLocalizedMessage());
                     } 
 
+                    Thread walletUpdate = new Thread(new MulticastReceiver());
+                    walletUpdate.start();
+
                     
                     System.out.println(serverResponse);
                     break;
