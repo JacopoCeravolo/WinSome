@@ -62,9 +62,9 @@ public class RewardsManager implements Runnable {
         
                     double total_reward = 0;
 
-                    for (Post post : user.getBlog().values()) {
+                    for (Integer postID : user.getBlog()) {
 
-
+                        Post post = network.getPostsMap().get(postID);
                         double likes_reward = calculateLikesReward(post, last_update);
                         double comments_reward = calculateCommentsReward(post, last_update);
             
@@ -72,6 +72,11 @@ public class RewardsManager implements Runnable {
                             (Math.log(likes_reward) + Math.log(comments_reward)) / (post.times_evalued++);
 
                         total_reward += post_reward;
+                    }
+
+                    if (Double.isInfinite(total_reward)) {
+                        System.err.println("[REWARD MANAGER] error when calculating, got Infinity");
+                        continue;
                     }
 
                     if (total_reward > 0) {

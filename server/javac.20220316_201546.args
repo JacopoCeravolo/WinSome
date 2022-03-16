@@ -1,0 +1,5 @@
+-d
+../classes
+-classpath
+../:../libs/gson-2.8.9.jar
+ServerMain.java

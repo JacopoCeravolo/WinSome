@@ -1,10 +1,5 @@
 package server.socialnetwork;
 
-// import com.google.gson.Gson;
-// import com.google.gson.GsonBuilder;
-// import java.lang.reflect.Type;
-// import com.google.gson.reflect.TypeToken;
-
 import server.socialnetwork.exceptions.InvalidPasswordException;
 import server.socialnetwork.exceptions.PostNotFoundException;
 import server.socialnetwork.exceptions.UnauthorizedOperationException;
@@ -22,7 +17,7 @@ public class WinSomeNetwork {
 
     private ConcurrentHashMap<String, User> usersMap;
     private ConcurrentHashMap<Integer, Post> postsMap;
-    private ConcurrentHashMap<String, List<User>> tagsMap;
+    private ConcurrentHashMap<String, List<String>> tagsMap;
 
     public WinSomeNetwork() {
         postID = new AtomicInteger(0);
@@ -57,8 +52,10 @@ public class WinSomeNetwork {
         ArrayList<User> usersList = new ArrayList<>();
 
         for (String tag : user.getTags()) {
-            for (User u : tagsMap.get(tag)) {
-                
+
+            for (String username : tagsMap.get(tag)) {
+
+                User u = usersMap.get(username);
                 if (u.equals(user) || usersList.contains(u)) continue;
 
                 usersList.add(u);
@@ -76,8 +73,8 @@ public class WinSomeNetwork {
 
         if (toFollow == null) throw new UserNotFoundException();
 
-        user.getFollowing().putIfAbsent(username, toFollow);
-        toFollow.getFollowers().putIfAbsent(user.getUserName(), user);
+        user.getFollowing().add(toFollow.getUserName());
+        // toFollow.getFollowers().putIfAbsent(user.getUserName(), user);
         
     }
 
@@ -88,8 +85,8 @@ public class WinSomeNetwork {
 
             if (toUnfollow == null) throw new UserNotFoundException();
 
-            user.getFollowing().remove(username, toUnfollow);
-            toUnfollow.getFollowers().remove(user.getUserName(), user);
+            user.getFollowing().remove(username);
+            // toUnfollow.getFollowers().remove(user.getUserName(), user);
 
     }
 
@@ -99,7 +96,7 @@ public class WinSomeNetwork {
 
         post.setPostID(postNum);
         postsMap.put(postNum, post);
-        user.getBlog().put(postNum, post);
+        user.getBlog().add(postNum);
 
         return postNum;
     }
@@ -118,11 +115,11 @@ public class WinSomeNetwork {
     public ArrayList<Post> showFeed(User user) {
 
         ArrayList<Post> feed = new ArrayList<>();
-        HashMap<String, User> following = user.getFollowing();
+        ArrayList<String> following = user.getFollowing();
         
-        for (User u : following.values()) {
-            for (Post post : u.getBlog().values()) {
-                feed.add(post);
+        for (String u : following) {
+            for (Integer post_id : usersMap.get(u).getBlog()) {
+                feed.add(postsMap.get(post_id));
             }
         }
 
@@ -140,7 +137,7 @@ public class WinSomeNetwork {
 
             // should delete everything
             postsMap.remove(postID, post);
-            user.getBlog().remove(postID, post);
+            user.getBlog().remove(postID);
             return post;
     }
 
@@ -154,7 +151,7 @@ public class WinSomeNetwork {
             post.increRewin();
 
             // should check if key (postID) is already used
-            user.getBlog().put(postID, post);
+            user.getBlog().add(postID);
     }
 
     public void ratePost(User user, Integer postID, Integer vote)
@@ -196,24 +193,12 @@ public class WinSomeNetwork {
         return postsMap;
     }
 
-    public ConcurrentHashMap<String, List<User>> getTagsMap() {
+    public ConcurrentHashMap<String, List<String>> getTagsMap() {
         return tagsMap;
     }
 
-    public String serialize() {
-        
-        /* Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        
-        String postIdJson = gson.toJson(postID);
-
-        String usersMapJson = gson.toJson(usersMap);
-        String postsMapJson = gson.toJson(postsMap);
-        String tagsMapJson = gson.toJson(tagsMap);
-
-        return postIdJson + "\n" 
-            + usersMapJson + "\n"
-            + postsMapJson + "\n" 
-            + tagsMapJson + "\n"; */
-            return "";
+    public AtomicInteger getPostID() {
+        return postID;
     }
+
 }

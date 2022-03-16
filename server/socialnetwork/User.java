@@ -16,10 +16,9 @@ public class User {
     private UserStatus status;
 
     private ArrayList<String> tagsList;
-    private HashMap<String, User> followers;
-    private HashMap<String, User> following;
+    private ArrayList<String> following;
 
-    private HashMap<Integer, Post> blog;
+    private ArrayList<Integer> blog;
 
     private Wallet wallet;
     
@@ -37,10 +36,10 @@ public class User {
             this.tagsList.add(tag.toLowerCase());
         }
 
-        this.followers = new HashMap<>();
-        this.following = new HashMap<>();
+        
+        this.following = new ArrayList<>();
 
-        this.blog = new HashMap<>();
+        this.blog = new ArrayList<>();
 
         this.wallet = new Wallet();
 
@@ -48,14 +47,6 @@ public class User {
 
     public void setUserID(Integer uniqueID) {
         this.uniqueID = uniqueID;
-    }
-
-
-    public void followUser(User user) {
-        
-        following.putIfAbsent(user.getUserName(), user);
-        user.getFollowers().putIfAbsent(this.username, this);
-
     }
 
     public Wallet getWallet() {
@@ -83,28 +74,24 @@ public class User {
         this.status = status;
     }
 
-    public HashMap<Integer, Post> getBlog() {
+    public ArrayList<Integer> getBlog() {
         return this.blog;
-    }
-
-    public HashMap<String, User> getFollowers() {
-        return this.followers;
     }
 
     public Collection<String> getTags() {
         return this.tagsList;
     }
 
-    public HashMap<String, User> getFollowing() {
+    public ArrayList<String> getFollowing() {
         return this.following;
     }
 
     @Override
     public String toString() {
 
-
+        // TODO: change
         String userFormatted = String.format(
-            "| %10s | %d [followers] | %d [following] | ", username, followers.size(), following.size());
+            "| %10s | %d [followers] | %d [following] | ", username, 0, following.size());
         
         for (String tag : tagsList) {
             userFormatted += tag + ", ";

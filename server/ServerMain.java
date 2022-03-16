@@ -1,6 +1,13 @@
 package server;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.AlreadyBoundException;
@@ -9,16 +16,18 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
 import server.rmi.RMIRegistration;
+import server.socialnetwork.User;
 import server.socialnetwork.WinSomeNetwork;
 import server.threads.ConnectionManager;
 import server.threads.RewardsManager;
-import server.threads.Serializer;
+import server.threads.BackupManager;
 
 import shared.rmi.RMIRegistrationInterface;
 
@@ -42,16 +51,41 @@ public class ServerMain {
     private final static LinkedList<Socket> connectedSockets = new LinkedList<>();
 
     private final static RMIRegistration REGISTRATION = new RMIRegistration(network);
+
+    public final static String USERBACKUP_PATH = "/Users/jacopoceravolo/Development/WinSome/server/backup/users_backup.json";
+    public final static String POSTBACKUP_PATH = "/Users/jacopoceravolo/Development/WinSome/server/backup/posts_backup.json";
+    public final static String TAGBACKUP_PATH = "/Users/jacopoceravolo/Development/WinSome/server/backup/tags_backup.json";
     
 
     public static void main(String[] args) {
+
+        File usersBackupFile = new File(USERBACKUP_PATH);
+        File postsBackupFile = new File(POSTBACKUP_PATH);
+        File tagsBackupFile = new File(TAGBACKUP_PATH);
+        
+        try {
+            if (usersBackupFile.exists() && postsBackupFile.exists() && tagsBackupFile.exists()) {
+                // TODO: start network from backup
+                // ConcurrentHashMap<String, User> usersMap = 
+                //     BackupManager.deserializeUserMap(new FileInputStream(usersBackupFile));
+                
+                
+            } else {
+                usersBackupFile.createNewFile();
+                postsBackupFile.createNewFile();
+                tagsBackupFile.createNewFile();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         Thread rewardManager = new Thread(new RewardsManager(network, exitSignal));
         rewardManager.start();
 
-        Thread serializer = new Thread(new Serializer(network, exitSignal));
-        serializer.start();
+        Thread backupManager = new Thread(new BackupManager(network, exitSignal));
+        backupManager.start();
 
         // RMI
         try {
@@ -97,7 +131,7 @@ public class ServerMain {
             threadpool.shutdown();
 
             try {
-                serializer.join();
+                backupManager.join();
                 rewardManager.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();

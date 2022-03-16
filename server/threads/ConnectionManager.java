@@ -148,11 +148,11 @@ public class ConnectionManager implements Runnable{
 
                         response.append("users you are following:\n");
 
-                        ArrayList<User> followingList = (ArrayList<User>)
-                            activeUser.getFollowing().values();
+                        ArrayList<String> followingList = activeUser.getFollowing();
 
-                        for (User user : followingList) {
-                            response.append(user.toString());
+                        for (String u : followingList) {
+
+                            response.append(network.getUsersMap().get(u).toString());
                         }
 
                         break;
@@ -263,11 +263,11 @@ public class ConnectionManager implements Runnable{
 
                         response.append("showing your blog:\n");
 
-                        HashMap<Integer, Post> blog = activeUser.getBlog();
+                        /* HashMap<Integer, Post> blog = activeUser.getBlog();
 
                         for (Post post : blog.values()) {
                             response.append(post.toString());
-                        }
+                        } */
 
                         break;
                     }

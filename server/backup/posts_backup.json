@@ -1,0 +1,116 @@
+[{
+  "uniqueID": 1,
+  "timeStamp": "Mar 16, 2022, 8:16:58 PM",
+  "author": {
+    "username": "user1",
+    "password": "pass",
+    "status": "ONLINE",
+    "tagsList": [
+      "tag1",
+      "tag2",
+      "tag3"
+    ],
+    "following": [],
+    "blog": [
+      1,
+      2
+    ],
+    "wallet": {
+      "totalAmount": 0.0,
+      "history": []
+    }
+  },
+  "title": "iti",
+  "contents": "iti",
+  "upvotes": 0,
+  "downvotes": 0,
+  "rewins": 0,
+  "times_evalued": 1,
+  "votes": [],
+  "comments": []
+},
+{
+  "uniqueID": 2,
+  "timeStamp": "Mar 16, 2022, 8:17:00 PM",
+  "author": {
+    "username": "user1",
+    "password": "pass",
+    "status": "ONLINE",
+    "tagsList": [
+      "tag1",
+      "tag2",
+      "tag3"
+    ],
+    "following": [],
+    "blog": [
+      1,
+      2
+    ],
+    "wallet": {
+      "totalAmount": 0.0,
+      "history": []
+    }
+  },
+  "title": "iti",
+  "contents": "sksk",
+  "upvotes": 0,
+  "downvotes": 0,
+  "rewins": 0,
+  "times_evalued": 1,
+  "votes": [],
+  "comments": []
+},
+{
+  "uniqueID": 3,
+  "timeStamp": "Mar 16, 2022, 8:17:26 PM",
+  "author": {
+    "username": "user",
+    "password": "pass",
+    "status": "ONLINE",
+    "tagsList": [],
+    "following": [],
+    "blog": [
+      3,
+      4
+    ],
+    "wallet": {
+      "totalAmount": 0.0,
+      "history": []
+    }
+  },
+  "title": "iti",
+  "contents": "ititi",
+  "upvotes": 0,
+  "downvotes": 0,
+  "rewins": 0,
+  "times_evalued": 0,
+  "votes": [],
+  "comments": []
+},
+{
+  "uniqueID": 4,
+  "timeStamp": "Mar 16, 2022, 8:17:29 PM",
+  "author": {
+    "username": "user",
+    "password": "pass",
+    "status": "ONLINE",
+    "tagsList": [],
+    "following": [],
+    "blog": [
+      3,
+      4
+    ],
+    "wallet": {
+      "totalAmount": 0.0,
+      "history": []
+    }
+  },
+  "title": "nttt",
+  "contents": "tntn",
+  "upvotes": 0,
+  "downvotes": 0,
+  "rewins": 0,
+  "times_evalued": 0,
+  "votes": [],
+  "comments": []
+}]

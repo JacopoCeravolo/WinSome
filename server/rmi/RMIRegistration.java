@@ -44,7 +44,7 @@ public class RMIRegistration implements RMIRegistrationInterface {
     
             for (String tag : tags) {
                 network.getTagsMap().putIfAbsent(tag, new ArrayList<>());
-                network.getTagsMap().get(tag).add(newUser);
+                network.getTagsMap().get(tag).add(username);
             }
         }
 
