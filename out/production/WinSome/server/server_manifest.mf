@@ -1,5 +1,0 @@
-Manifest-Version: 1.0 
-Created-By: Jacopo Ceravolo
-Class-Path: gson-2.8.9.jar
-
-
