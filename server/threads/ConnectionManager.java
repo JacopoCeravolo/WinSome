@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionManager implements Runnable{
@@ -133,7 +134,7 @@ public class ConnectionManager implements Runnable{
                         ArrayList<User> usersList = network.listUsers(activeUser);
 
                         for (User user : usersList) {
-                            response.append(user.toString());
+                            response.append(user.toString() + "\n");
                         }
 
                         break;
@@ -148,11 +149,11 @@ public class ConnectionManager implements Runnable{
 
                         response.append("users you are following:\n");
 
-                        ArrayList<String> followingList = activeUser.getFollowing();
+                        TreeSet<String> followingList = activeUser.getFollowing();
 
                         for (String u : followingList) {
 
-                            response.append(network.getUsersMap().get(u).toString());
+                            response.append(network.getUsersMap().get(u).toString() + "\n");
                         }
 
                         break;

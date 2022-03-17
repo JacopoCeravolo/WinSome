@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 
 public class User {
     
@@ -16,9 +17,10 @@ public class User {
     private UserStatus status;
 
     private ArrayList<String> tagsList;
-    private ArrayList<String> following;
+    private TreeSet<String> following;
+    private TreeSet<String> followers;
 
-    private ArrayList<Integer> blog;
+    private TreeSet<Integer> blog;
 
     private Wallet wallet;
     
@@ -37,9 +39,10 @@ public class User {
         }
 
         
-        this.following = new ArrayList<>();
+        this.following = new TreeSet<>();
+        this.followers = new TreeSet<>();
 
-        this.blog = new ArrayList<>();
+        this.blog = new TreeSet<>();
 
         this.wallet = new Wallet();
 
@@ -74,7 +77,7 @@ public class User {
         this.status = status;
     }
 
-    public ArrayList<Integer> getBlog() {
+    public TreeSet<Integer> getBlog() {
         return this.blog;
     }
 
@@ -82,8 +85,12 @@ public class User {
         return this.tagsList;
     }
 
-    public ArrayList<String> getFollowing() {
+    public TreeSet<String> getFollowing() {
         return this.following;
+    }
+
+    public TreeSet<String> getFollowers() {
+        return this.followers;
     }
     
 
@@ -123,11 +130,15 @@ public class User {
         this.tagsList = tagsList;
     }
 
-    public void setFollowing(ArrayList<String> following) {
+    public void setFollowing(TreeSet<String> following) {
         this.following = following;
     }
 
-    public void setBlog(ArrayList<Integer> blog) {
+    public void setFollowers(TreeSet<String> followers) {
+        this.followers = followers;
+    }
+
+    public void setBlog(TreeSet<Integer> blog) {
         this.blog = blog;
     }
 
@@ -140,10 +151,10 @@ public class User {
 
         // TODO: change
         String userFormatted = String.format(
-            "| %10s | %d [followers] | %d [following] | ", username, 0, following.size());
+            "| %10s | %d [followers] | %d [following] | ", username, followers.size(), following.size());
         
         for (String tag : tagsList) {
-            userFormatted += tag + ", ";
+            userFormatted += tag + " ";
         }
 
         

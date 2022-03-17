@@ -61,6 +61,8 @@ public class ServerMain {
 
     public static void main(String[] args) {
 
+        boolean recover = false;
+
         File usersBackupFile = new File(USERBACKUP_PATH);
         File postsBackupFile = new File(POSTBACKUP_PATH);
         File tagsBackupFile = new File(TAGBACKUP_PATH);
@@ -88,6 +90,8 @@ public class ServerMain {
                 network.setPostID(postID);
                 network.setPostsMap(postsMap);
                 network.setTagsMap(tagsMap);
+
+                recover = true;
                 
                 
             } else {
@@ -101,24 +105,20 @@ public class ServerMain {
             e.printStackTrace();
         }
 
-        /* if (network == null) {
-            System.out.println("[SERVER] initializing empty data structures");
-            network = new WinSomeNetwork();
-        } */
-
-
-        System.out.println("[SERVER] starting rewards manager");
-        Thread rewardManager = new Thread(new RewardsManager(network, exitSignal));
-        rewardManager.start();
-
-        System.out.println("[SERVER] starting backup manager");
-        Thread backupManager = new Thread(new BackupManager(network, exitSignal));
-        backupManager.start();
-
         // RMI
         try {
 
             REGISTRATION = new RMIRegistration(network);
+
+            if (recover) {
+
+                for (User user : network.getUsersMap().values()) {
+                    for (String follower : user.getFollowers()) {
+                        REGISTRATION.followerUpdate(user.getUsername(), "add"+":"+user.toString());
+                    }
+                }
+            }
+
             RMIRegistrationInterface STUB = (RMIRegistrationInterface) UnicastRemoteObject.exportObject(REGISTRATION, 0);
            
             LocateRegistry.createRegistry(RMI_PORT);
@@ -129,6 +129,16 @@ public class ServerMain {
         } catch (RemoteException e) {
             System.err.println("Error: " + e.getMessage());
         }
+
+
+        System.out.println("[SERVER] starting rewards manager");
+        Thread rewardManager = new Thread(new RewardsManager(network, exitSignal));
+        rewardManager.start();
+
+        System.out.println("[SERVER] starting backup manager");
+        Thread backupManager = new Thread(new BackupManager(network, exitSignal));
+        backupManager.start();
+
 
         try (ServerSocket listenSocket = new ServerSocket(LISTEN_PORT)) {
 

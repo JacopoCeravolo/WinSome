@@ -65,14 +65,22 @@ public class RewardsManager implements Runnable {
                     for (Integer postID : user.getBlog()) {
 
                         Post post = network.getPostsMap().get(postID);
+
                         double likes_reward = calculateLikesReward(post, last_update);
                         double comments_reward = calculateCommentsReward(post, last_update);
-            
+                        
                         double post_reward = 
-                            (Math.log(likes_reward) + Math.log(comments_reward)) / (post.times_evalued++);
+                            (Math.log(likes_reward) + Math.log(comments_reward)) / (double)(post.times_evalued++);
+
+                        /* System.out.println("[REWARD MANAGER] post (id="+ post.getUniqueID()+") " + 
+                            " likes reward: " + likes_reward +
+                            " comments reward: " + comments_reward +
+                            " total post reward: " + post_reward); */
 
                         total_reward += post_reward;
                     }
+
+                    System.out.println("[REWARD MANAGER] total user "+user.getUserName()+" reward " + total_reward);
 
                     if (Double.isInfinite(total_reward)) {
                         System.err.println("[REWARD MANAGER] error when calculating, got Infinity");
@@ -81,7 +89,7 @@ public class RewardsManager implements Runnable {
 
                     if (total_reward > 0) {
                         user.getWallet().addTransaction(
-                            new Transaction(new Date(System.currentTimeMillis()), total_reward));
+                            new Transaction(System.currentTimeMillis(), total_reward));
                     }
                 }
             }

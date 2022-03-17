@@ -19,6 +19,7 @@ TODO:
 [] fix bugs in callback methods when more registration from same client
 [] sort feed by timestamp
 [] correct serialization of id, user and tag map, but not post map
+[] feed and such should be ordered therefore sets
 
 
 

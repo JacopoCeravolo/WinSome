@@ -8,6 +8,7 @@ import server.socialnetwork.exceptions.UserNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -83,7 +84,7 @@ public class WinSomeNetwork {
                 if (u.equals(user) || usersList.contains(u)) continue;
 
                 usersList.add(u);
-                format.append(u.toString());
+                format.append(u.toString() + "\n");
             }
         }
 
@@ -98,7 +99,7 @@ public class WinSomeNetwork {
         if (toFollow == null) throw new UserNotFoundException();
 
         user.getFollowing().add(toFollow.getUserName());
-        // toFollow.getFollowers().putIfAbsent(user.getUserName(), user);
+        toFollow.getFollowers().add(user.getUserName());
         
     }
 
@@ -110,7 +111,7 @@ public class WinSomeNetwork {
             if (toUnfollow == null) throw new UserNotFoundException();
 
             user.getFollowing().remove(username);
-            // toUnfollow.getFollowers().remove(user.getUserName(), user);
+            toUnfollow.getFollowers().remove(user.getUserName());
 
     }
 
@@ -139,7 +140,7 @@ public class WinSomeNetwork {
     public ArrayList<Post> showFeed(User user) {
 
         ArrayList<Post> feed = new ArrayList<>();
-        ArrayList<String> following = user.getFollowing();
+        TreeSet<String> following = user.getFollowing();
         
         for (String u : following) {
             for (Integer post_id : usersMap.get(u).getBlog()) {

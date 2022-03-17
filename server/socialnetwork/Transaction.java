@@ -4,15 +4,15 @@ import java.util.Date;
 
 public class Transaction {
     
-    private Date timeStamp;
+    private long timeStamp;
     private double variation;
 
-    public Transaction(Date timeStamp, double variation) {
+    public Transaction(long timeStamp, double variation) {
         this.timeStamp = timeStamp;
         this.variation = variation;
     }
 
-    public Date getTimeStamp() {
+    public long getTimeStamp() {
         return timeStamp;
     }
 

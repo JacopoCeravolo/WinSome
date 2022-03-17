@@ -1,6 +1,8 @@
 package server.socialnetwork;
 
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Wallet {
@@ -23,10 +25,10 @@ public class Wallet {
         StringBuilder sb = new StringBuilder("AMOUNT\tDATE\n");
 
         for (Transaction t : history) {
-            sb.append( String.format("%.2f", t.getVariation()) + "\t" + t.getTimeStamp() + "\n");
+            sb.append( String.format("%.2f", t.getVariation()) + "\t" + new Date(t.getTimeStamp()) + "\n");
         }
 
-        sb.append("\nTOTAL:\t" + totalAmount + " [WinCoins]\n");
+        sb.append(String.format("\nTOTAL:\t%.2f [WinCoins]\n", totalAmount));
 
         return sb.toString();
     }

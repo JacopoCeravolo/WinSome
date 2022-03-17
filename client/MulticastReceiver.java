@@ -61,7 +61,7 @@ public class MulticastReceiver implements Runnable {
             if ("end".equals(received)) {
                 break;
             }
-            // System.out.println(received);
+            System.out.printf("\n>> received packet: %s\n>>", received);
         }
         try {
             socket.leaveGroup(group);

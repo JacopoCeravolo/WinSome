@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -275,8 +276,9 @@ public class BackupManager implements Runnable {
         String password = null;
         UserStatus status = UserStatus.OFFLINE;
         ArrayList<String> tagsList = new ArrayList<>();
-        ArrayList<String> following = new ArrayList<>();;
-        ArrayList<Integer> blog = new ArrayList<>();
+        TreeSet<String> following = new TreeSet<>();
+        TreeSet<String> followers = new TreeSet<>();
+        TreeSet<Integer> blog = new TreeSet<>();
         Wallet wallet = null;
 
         try {
@@ -288,9 +290,9 @@ public class BackupManager implements Runnable {
                     username = reader.nextString();
                 } else if (name.equals("password")) {
                     password = reader.nextString();
-                } /* else if (name.equals("status")) {
-                    status = reader.nextString();
-                }  */else if (name.equals("tagsList")) {
+                } else if (name.equals("status")) {
+                    status = UserStatus.valueOf(reader.nextString());
+                } else if (name.equals("tagsList")) {
                     reader.beginArray();
                     while (reader.hasNext()) {
                         tagsList.add(reader.nextString());
@@ -302,6 +304,12 @@ public class BackupManager implements Runnable {
                         following.add(reader.nextString());
                     }
                     reader.endArray();
+                } else if (name.equals("followers")) {
+                    reader.beginArray();
+                    while (reader.hasNext()) {
+                        followers.add(reader.nextString());
+                    }
+                    reader.endArray();
                 } else if (name.equals("blog")) {
                     reader.beginArray();
                     while (reader.hasNext()) {
@@ -309,7 +317,9 @@ public class BackupManager implements Runnable {
                     }
                     reader.endArray();
                 } else if (name.equals("wallet")) {
+                    reader.beginObject();
                     wallet = parseWallet(reader);
+                    reader.endObject();
                 } else {
                     reader.skipValue();
                 }
@@ -323,6 +333,7 @@ public class BackupManager implements Runnable {
 
         newUser.setStatus(status);
         newUser.setFollowing(following);
+        newUser.setFollowers(followers);
         newUser.setBlog(blog);
         newUser.setWallet(wallet);
 
@@ -335,33 +346,54 @@ public class BackupManager implements Runnable {
         double amount = 0;
 
         try {
-            reader.beginObject();
+         
             while (reader.hasNext()) {
                 String name = reader.nextName();
                 if (name.equals("totalAmount")) {
                     amount = reader.nextDouble();
-                } else if (name.equals(history)) {
+                } else if (name.equals("history")) {
                     reader.beginArray();
                     while (reader.hasNext()) {
-                        // TODO: insert transaction into list 
-                        history.add(null);
+                        reader.beginObject();
+                        wallet.addTransaction(parseTransaction(reader));
+                        reader.endObject();
                     }
                     reader.endArray();
                 } else {
                     reader.skipValue();
                 }
             }
-            reader.endObject();
+        
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        
-
-        wallet.setHistory(history);
+        // wallet.setHistory(history);
         wallet.setTotalAmount(amount);
 
         return wallet;
+    }
+
+    private static synchronized Transaction parseTransaction(JsonReader reader) {
+        long timeStamp = 0;
+        double variation = 0;
+
+        try {
+
+            while (reader.hasNext()) {
+                String name = reader.nextName();
+
+                if (name.equals("timeStamp")) {
+                    timeStamp = reader.nextLong();
+                } else if (name.equals("variation")) {
+                    variation = reader.nextDouble();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new Transaction(timeStamp, variation);
     }
 
     private static synchronized Post parsePost(JsonReader reader) {

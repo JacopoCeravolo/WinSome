@@ -1,7 +1,7 @@
 4{
   "1": {
     "uniqueID": 1,
-    "timeStamp": 1647517240380,
+    "timeStamp": 1647524572732,
     "author": {
       "username": "user1",
       "password": "pass",
@@ -9,136 +9,150 @@
       "tagsList": [
         "tag1",
         "tag2",
-        "tag3"
-      ],
-      "following": [],
-      "blog": [
-        1,
-        2
-      ],
-      "wallet": {
-        "totalAmount": 0.0,
-        "history": []
-      }
-    },
-    "title": "itol",
-    "contents": "ococ",
-    "upvotes": 1,
-    "downvotes": 0,
-    "rewins": 0,
-    "times_evalued": 1,
-    "votes": [
-      {
-        "author": "user2",
-        "timeStamp": 1647517254680,
-        "vote": 1
-      }
-    ],
-    "comments": [
-      {
-        "author": "user2",
-        "timeStamp": 1647517260293,
-        "contents": "nice"
-      }
-    ]
-  },
-  "2": {
-    "uniqueID": 2,
-    "timeStamp": 1647517242644,
-    "author": {
-      "username": "user1",
-      "password": "pass",
-      "status": "OFFLINE",
-      "tagsList": [
-        "tag1",
-        "tag2",
-        "tag3"
-      ],
-      "following": [],
-      "blog": [
-        1,
-        2
-      ],
-      "wallet": {
-        "totalAmount": 0.0,
-        "history": []
-      }
-    },
-    "title": "itit",
-    "contents": "ocncnc",
-    "upvotes": 0,
-    "downvotes": 0,
-    "rewins": 0,
-    "times_evalued": 1,
-    "votes": [],
-    "comments": [
-      {
-        "author": "user2",
-        "timeStamp": 1647517256922,
-        "contents": "nice"
-      }
-    ]
-  },
-  "3": {
-    "uniqueID": 3,
-    "timeStamp": 1647517250671,
-    "author": {
-      "username": "user2",
-      "password": "pass",
-      "status": "OFFLINE",
-      "tagsList": [
-        "tag2",
-        "tag3",
-        "tag4"
-      ],
-      "following": [
-        "user1"
-      ],
-      "blog": [
-        3
-      ],
-      "wallet": {
-        "totalAmount": 0.0,
-        "history": []
-      }
-    },
-    "title": "iti",
-    "contents": "iti",
-    "upvotes": 1,
-    "downvotes": 0,
-    "rewins": 0,
-    "times_evalued": 1,
-    "votes": [
-      {
-        "author": "user3",
-        "timeStamp": 1647517276073,
-        "vote": 1
-      }
-    ],
-    "comments": [
-      {
-        "author": "user3",
-        "timeStamp": 1647517278493,
-        "contents": "nice"
-      }
-    ]
-  },
-  "4": {
-    "uniqueID": 4,
-    "timeStamp": 1647517266476,
-    "author": {
-      "username": "user3",
-      "password": "pass",
-      "status": "OFFLINE",
-      "tagsList": [
         "tag3",
         "tag4",
         "tag5"
       ],
       "following": [
-        "user2"
+        "user2",
+        "user3",
+        "user4"
+      ],
+      "followers": [
+        "user2",
+        "user3"
       ],
       "blog": [
+        1,
+        2
+      ],
+      "wallet": {
+        "totalAmount": 1.617343421306539,
+        "history": [
+          {
+            "timeStamp": 1647524655638,
+            "variation": 1.3862943611198906
+          },
+          {
+            "timeStamp": 1647524775639,
+            "variation": 0.23104906018664842
+          }
+        ]
+      }
+    },
+    "title": "post dell\u0027utente uno",
+    "contents": "questo è il contenuto",
+    "upvotes": 2,
+    "downvotes": 1,
+    "rewins": 0,
+    "times_evalued": 4,
+    "votes": [
+      {
+        "author": "user2",
+        "timeStamp": 1647524643757,
+        "vote": 1
+      },
+      {
+        "author": "user3",
+        "timeStamp": 1647524769384,
+        "vote": 1
+      },
+      {
+        "author": "user3",
+        "timeStamp": 1647524778032,
+        "vote": -1
+      }
+    ],
+    "comments": [
+      {
+        "author": "user2",
+        "timeStamp": 1647524647647,
+        "contents": "bello"
+      },
+      {
+        "author": "user3",
+        "timeStamp": 1647524783250,
+        "contents": "niceeeeeeee"
+      }
+    ]
+  },
+  "2": {
+    "uniqueID": 2,
+    "timeStamp": 1647524583028,
+    "author": {
+      "username": "user1",
+      "password": "pass",
+      "status": "OFFLINE",
+      "tagsList": [
+        "tag1",
+        "tag2",
+        "tag3",
+        "tag4",
+        "tag5"
+      ],
+      "following": [
+        "user2",
+        "user3",
+        "user4"
+      ],
+      "followers": [
+        "user2",
+        "user3"
+      ],
+      "blog": [
+        1,
+        2
+      ],
+      "wallet": {
+        "totalAmount": 1.617343421306539,
+        "history": [
+          {
+            "timeStamp": 1647524655638,
+            "variation": 1.3862943611198906
+          },
+          {
+            "timeStamp": 1647524775639,
+            "variation": 0.23104906018664842
+          }
+        ]
+      }
+    },
+    "title": "secondo post utente uno",
+    "contents": "contenuto del post",
+    "upvotes": 0,
+    "downvotes": 1,
+    "rewins": 0,
+    "times_evalued": 4,
+    "votes": [
+      {
+        "author": "user3",
+        "timeStamp": 1647524772909,
+        "vote": -1
+      }
+    ],
+    "comments": []
+  },
+  "3": {
+    "uniqueID": 3,
+    "timeStamp": 1647524724063,
+    "author": {
+      "username": "user4",
+      "password": "pass",
+      "status": "ONLINE",
+      "tagsList": [
+        "tag1",
+        "tag2",
+        "tag3",
+        "tag4",
+        "tag5"
+      ],
+      "following": [],
+      "followers": [
+        "user1",
+        "user3"
+      ],
+      "blog": [
+        3,
         4
       ],
       "wallet": {
@@ -146,13 +160,68 @@
         "history": []
       }
     },
-    "title": "iti",
-    "contents": "itit",
-    "upvotes": 0,
+    "title": "titolo",
+    "contents": "contnuto",
+    "upvotes": 1,
     "downvotes": 0,
     "rewins": 0,
     "times_evalued": 1,
-    "votes": [],
+    "votes": [
+      {
+        "author": "user3",
+        "timeStamp": 1647524790957,
+        "vote": 1
+      }
+    ],
+    "comments": [
+      {
+        "author": "user3",
+        "timeStamp": 1647524787873,
+        "contents": "niceee"
+      }
+    ]
+  },
+  "4": {
+    "uniqueID": 4,
+    "timeStamp": 1647524730661,
+    "author": {
+      "username": "user4",
+      "password": "pass",
+      "status": "ONLINE",
+      "tagsList": [
+        "tag1",
+        "tag2",
+        "tag3",
+        "tag4",
+        "tag5"
+      ],
+      "following": [],
+      "followers": [
+        "user1",
+        "user3"
+      ],
+      "blog": [
+        3,
+        4
+      ],
+      "wallet": {
+        "totalAmount": 0.0,
+        "history": []
+      }
+    },
+    "title": "titolo",
+    "contents": "contenuto",
+    "upvotes": 0,
+    "downvotes": 1,
+    "rewins": 0,
+    "times_evalued": 1,
+    "votes": [
+      {
+        "author": "user3",
+        "timeStamp": 1647524793100,
+        "vote": -1
+      }
+    ],
     "comments": []
   }
 }

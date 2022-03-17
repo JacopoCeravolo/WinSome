@@ -6,16 +6,35 @@
     "tagsList": [
       "tag1",
       "tag2",
-      "tag3"
+      "tag3",
+      "tag4",
+      "tag5"
     ],
-    "following": [],
+    "following": [
+      "user2",
+      "user3",
+      "user4"
+    ],
+    "followers": [
+      "user2",
+      "user3"
+    ],
     "blog": [
       1,
       2
     ],
     "wallet": {
-      "totalAmount": 0.0,
-      "history": []
+      "totalAmount": 1.617343421306539,
+      "history": [
+        {
+          "timeStamp": 1647524655638,
+          "variation": 1.3862943611198906
+        },
+        {
+          "timeStamp": 1647524775639,
+          "variation": 0.23104906018664842
+        }
+      ]
     }
   },
   "user2": {
@@ -23,16 +42,19 @@
     "password": "pass",
     "status": "OFFLINE",
     "tagsList": [
+      "tag1",
       "tag2",
       "tag3",
-      "tag4"
+      "tag4",
+      "tag5"
     ],
     "following": [
       "user1"
     ],
-    "blog": [
-      3
+    "followers": [
+      "user1"
     ],
+    "blog": [],
     "wallet": {
       "totalAmount": 0.0,
       "history": []
@@ -43,14 +65,43 @@
     "password": "pass",
     "status": "OFFLINE",
     "tagsList": [
+      "tag1",
+      "tag2",
       "tag3",
       "tag4",
       "tag5"
     ],
     "following": [
-      "user2"
+      "user1",
+      "user4"
+    ],
+    "followers": [
+      "user1"
+    ],
+    "blog": [],
+    "wallet": {
+      "totalAmount": 0.0,
+      "history": []
+    }
+  },
+  "user4": {
+    "username": "user4",
+    "password": "pass",
+    "status": "ONLINE",
+    "tagsList": [
+      "tag1",
+      "tag2",
+      "tag3",
+      "tag4",
+      "tag5"
+    ],
+    "following": [],
+    "followers": [
+      "user1",
+      "user3"
     ],
     "blog": [
+      3,
       4
     ],
     "wallet": {

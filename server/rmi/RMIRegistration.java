@@ -74,7 +74,7 @@ public class RMIRegistration implements RMIRegistrationInterface {
     }
 
     public void followerUpdate(String client, String update) throws RemoteException {
-        System.out.println("[CALLBACK] notifying client " +client+ " of update : " + update);
+        // System.out.println("[CALLBACK] notifying client " +client+ " of update : " + update);
         
         if (registeredClients.containsKey(client)) { // Client is online
             registeredClients.get(client).notifyEvent(update);
@@ -84,7 +84,7 @@ public class RMIRegistration implements RMIRegistrationInterface {
             pendingUpdates.putIfAbsent(client, new ArrayList<>());
             pendingUpdates.get(client).add(update);
 
-            System.out.println("[CALLBACK] client offline, added pending update " + update);
+            // System.out.println("[CALLBACK] client offline, added pending update " + update);
         }
     }
 
