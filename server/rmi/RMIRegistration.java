@@ -58,7 +58,7 @@ public class RMIRegistration implements RMIRegistrationInterface {
         if (!registeredClients.containsKey(client)) {
             registeredClients.put(client, clientInterface);
             System.out.println("[CALLBACK] client " +client+ " registered for callback");
-        }
+        } 
     }
 
     @Override

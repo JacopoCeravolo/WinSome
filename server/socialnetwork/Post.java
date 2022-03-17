@@ -8,7 +8,7 @@ public class Post {
     
     private Integer uniqueID;
 
-    private Date timeStamp;
+    private long timeStamp;
 
     private User author;
     private String title;
@@ -30,7 +30,7 @@ public class Post {
         this.title = title;
         this.contents = contents;
 
-        this.timeStamp = new Date(System.currentTimeMillis());
+        this.timeStamp = System.currentTimeMillis();
 
         this.upvotes = 0;
         this.downvotes = 0;
@@ -78,17 +78,75 @@ public class Post {
     }
 
     public void upvotePost(User user) {
-        votes.add(new Vote(user, +1));
+        votes.add(new Vote(user.getUserName(), +1));
         upvotes++;
     }
 
     public void downvotePost(User user) {
-        votes.add(new Vote(user, -1));
+        votes.add(new Vote(user.getUserName(), -1));
         downvotes++;
     }
 
     public void increRewin() {
         rewins++;
+    }
+
+    
+
+    public void setUniqueID(Integer uniqueID) {
+        this.uniqueID = uniqueID;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setContents(String contents) {
+        this.contents = contents;
+    }
+
+    public void setUpvotes(int upvotes) {
+        this.upvotes = upvotes;
+    }
+
+    public void setDownvotes(int downvotes) {
+        this.downvotes = downvotes;
+    }
+
+    public int getRewins() {
+        return rewins;
+    }
+
+    public void setRewins(int rewins) {
+        this.rewins = rewins;
+    }
+
+    public int getTimes_evalued() {
+        return times_evalued;
+    }
+
+    public void setTimes_evalued(int times_evalued) {
+        this.times_evalued = times_evalued;
+    }
+
+    public void setVotes(List<Vote> votes) {
+        this.votes = votes;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
     @Override
@@ -107,7 +165,7 @@ public class Post {
 
             for (Comment comment : comments) {
                 commentsFormatted = commentsFormatted + 
-                    "\t" + comment.getAuthor().getUserName() + " commented:\n" +
+                    "\t" + comment.getAuthor() + " commented:\n" +
                     "\t\t- " + comment.getContents() + "\n";
             }
 

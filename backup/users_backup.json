@@ -1,0 +1,95 @@
+[{
+  "username": "user1",
+  "password": "pass",
+  "status": "ONLINE",
+  "tagsList": [
+    "tag1",
+    "tag2",
+    "tag3"
+  ],
+  "following": [],
+  "blog": [
+    1,
+    2
+  ],
+  "wallet": {
+    "totalAmount": 0.0,
+    "history": []
+  }
+},
+{
+  "username": "user2",
+  "password": "pass",
+  "tagsList": [
+    "tag2",
+    "tag3",
+    "tag4"
+  ],
+  "following": [],
+  "blog": [],
+  "wallet": {
+    "totalAmount": 0.0,
+    "history": []
+  }
+},
+{
+  "username": "user5",
+  "password": "pass",
+  "tagsList": [
+    "tag5",
+    "tag6",
+    "tag7"
+  ],
+  "following": [],
+  "blog": [],
+  "wallet": {
+    "totalAmount": 0.0,
+    "history": []
+  }
+},
+{
+  "username": "user",
+  "password": "pass",
+  "status": "ONLINE",
+  "tagsList": [],
+  "following": [],
+  "blog": [
+    3,
+    4
+  ],
+  "wallet": {
+    "totalAmount": 0.0,
+    "history": []
+  }
+},
+{
+  "username": "user3",
+  "password": "pass",
+  "status": "ONLINE",
+  "tagsList": [
+    "tag3",
+    "tag4",
+    "tag5"
+  ],
+  "following": [],
+  "blog": [],
+  "wallet": {
+    "totalAmount": 0.0,
+    "history": []
+  }
+},
+{
+  "username": "user4",
+  "password": "pass",
+  "tagsList": [
+    "tag4",
+    "tag5",
+    "tag6"
+  ],
+  "following": [],
+  "blog": [],
+  "wallet": {
+    "totalAmount": 0.0,
+    "history": []
+  }
+}]

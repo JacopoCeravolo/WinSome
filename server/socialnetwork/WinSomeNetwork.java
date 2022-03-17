@@ -20,13 +20,37 @@ public class WinSomeNetwork {
     private ConcurrentHashMap<String, List<String>> tagsMap;
 
     public WinSomeNetwork() {
-        postID = new AtomicInteger(0);
-        usersMap = new ConcurrentHashMap<>();
-        postsMap = new ConcurrentHashMap<>();
-        tagsMap = new ConcurrentHashMap<>();
+        this.postID = new AtomicInteger(0);
+        this.usersMap = new ConcurrentHashMap<>();
+        this.postsMap = new ConcurrentHashMap<>();
+        this.tagsMap = new ConcurrentHashMap<>();
+    }
+
+    public WinSomeNetwork(ConcurrentHashMap<String, User> usersMap) {
+        this.postID = new AtomicInteger(0);
+        this.usersMap = usersMap;
+        this.postsMap = new ConcurrentHashMap<>();
+        this.tagsMap = new ConcurrentHashMap<>();
     }
 
     
+    
+
+    public void setPostID(AtomicInteger postID) {
+        this.postID = postID;
+    }
+
+    public void setUsersMap(ConcurrentHashMap<String, User> usersMap) {
+        this.usersMap = usersMap;
+    }
+
+    public void setPostsMap(ConcurrentHashMap<Integer, Post> postsMap) {
+        this.postsMap = postsMap;
+    }
+
+    public void setTagsMap(ConcurrentHashMap<String, List<String>> tagsMap) {
+        this.tagsMap = tagsMap;
+    }
 
     public User login(String username, String password)
         throws UserNotFoundException, InvalidPasswordException {
@@ -181,7 +205,7 @@ public class WinSomeNetwork {
 
             if (!this.showFeed(user).contains(post)) throw new UnauthorizedOperationException();
 
-            post.getComments().add(new Comment(user, comment));
+            post.getComments().add(new Comment(user.getUserName(), comment));
             
     }
 

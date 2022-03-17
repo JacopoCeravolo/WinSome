@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Wallet {
 
-    private float totalAmount;
+    private double totalAmount;
     private List<Transaction> history;
 
     public Wallet() {
@@ -30,4 +30,22 @@ public class Wallet {
 
         return sb.toString();
     }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public List<Transaction> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<Transaction> history) {
+        this.history = history;
+    }
+
+    
 }

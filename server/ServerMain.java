@@ -16,13 +16,15 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-
+import java.util.concurrent.atomic.AtomicInteger;
 
 import server.rmi.RMIRegistration;
+import server.socialnetwork.Post;
 import server.socialnetwork.User;
 import server.socialnetwork.WinSomeNetwork;
 import server.threads.ConnectionManager;
@@ -46,11 +48,11 @@ public class ServerMain {
 
     private final static ExecutorService threadpool = Executors.newCachedThreadPool();
 
-    private final static WinSomeNetwork network = new WinSomeNetwork();
+    private static WinSomeNetwork network = new WinSomeNetwork();
 
     private final static LinkedList<Socket> connectedSockets = new LinkedList<>();
 
-    private final static RMIRegistration REGISTRATION = new RMIRegistration(network);
+    private static RMIRegistration REGISTRATION;
 
     public final static String USERBACKUP_PATH = "/Users/jacopoceravolo/Development/WinSome/server/backup/users_backup.json";
     public final static String POSTBACKUP_PATH = "/Users/jacopoceravolo/Development/WinSome/server/backup/posts_backup.json";
@@ -65,12 +67,31 @@ public class ServerMain {
         
         try {
             if (usersBackupFile.exists() && postsBackupFile.exists() && tagsBackupFile.exists()) {
-                // TODO: start network from backup
-                // ConcurrentHashMap<String, User> usersMap = 
-                //     BackupManager.deserializeUserMap(new FileInputStream(usersBackupFile));
+        
+                System.out.println("[SERVER] retreiving backup");
+                
+                ConcurrentHashMap<String, User> usersMap = 
+                    BackupManager.deserializeUsers(new FileInputStream(usersBackupFile));
+
+                AtomicInteger postID =
+                    BackupManager.deserializePostID(new FileInputStream(postsBackupFile));
+                
+                ConcurrentHashMap<Integer, Post> postsMap = 
+                    BackupManager.deserializePosts(new FileInputStream(postsBackupFile));
+
+                ConcurrentHashMap<String, List<String>> tagsMap = 
+                    BackupManager.deserializeTags(new FileInputStream(tagsBackupFile));
+
+                System.out.println("[SERVER] initializing structures with saved backup");
+
+                network.setUsersMap(usersMap);
+                network.setPostID(postID);
+                network.setPostsMap(postsMap);
+                network.setTagsMap(tagsMap);
                 
                 
             } else {
+                // network = new WinSomeNetwork();
                 usersBackupFile.createNewFile();
                 postsBackupFile.createNewFile();
                 tagsBackupFile.createNewFile();
@@ -80,21 +101,30 @@ public class ServerMain {
             e.printStackTrace();
         }
 
+        /* if (network == null) {
+            System.out.println("[SERVER] initializing empty data structures");
+            network = new WinSomeNetwork();
+        } */
 
+
+        System.out.println("[SERVER] starting rewards manager");
         Thread rewardManager = new Thread(new RewardsManager(network, exitSignal));
         rewardManager.start();
 
+        System.out.println("[SERVER] starting backup manager");
         Thread backupManager = new Thread(new BackupManager(network, exitSignal));
         backupManager.start();
 
         // RMI
         try {
 
+            REGISTRATION = new RMIRegistration(network);
             RMIRegistrationInterface STUB = (RMIRegistrationInterface) UnicastRemoteObject.exportObject(REGISTRATION, 0);
            
             LocateRegistry.createRegistry(RMI_PORT);
             Registry RMI_REGISTRY = LocateRegistry.getRegistry(RMI_PORT);
             RMI_REGISTRY.rebind(RMI_SERVICE_NAME, STUB);
+            System.out.println("[SERVER] exported registration stub");
 
         } catch (RemoteException e) {
             System.err.println("Error: " + e.getMessage());

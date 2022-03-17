@@ -125,7 +125,7 @@ public class RewardsManager implements Runnable {
             
             if (comment.getTimeStamp() < last_update) continue;
 
-            User author = comment.getAuthor();
+            User author = network.getUsersMap().get(comment.getAuthor());
 
             if (!commentsByUser.containsKey(author)) {
                 commentsByUser.put(author, 1);

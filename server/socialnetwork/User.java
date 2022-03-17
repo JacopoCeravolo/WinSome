@@ -85,6 +85,55 @@ public class User {
     public ArrayList<String> getFollowing() {
         return this.following;
     }
+    
+
+    public Integer getUniqueID() {
+        return uniqueID;
+    }
+
+    public void setUniqueID(Integer uniqueID) {
+        this.uniqueID = uniqueID;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
+    }
+
+    public ArrayList<String> getTagsList() {
+        return tagsList;
+    }
+
+    public void setTagsList(ArrayList<String> tagsList) {
+        this.tagsList = tagsList;
+    }
+
+    public void setFollowing(ArrayList<String> following) {
+        this.following = following;
+    }
+
+    public void setBlog(ArrayList<Integer> blog) {
+        this.blog = blog;
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
 
     @Override
     public String toString() {

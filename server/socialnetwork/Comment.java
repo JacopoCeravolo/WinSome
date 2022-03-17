@@ -2,23 +2,29 @@ package server.socialnetwork;
 
 public class Comment {
     
-    private User author;
+    private String author;
     private long timeStamp;
 
     private String contents; 
     
-    public Comment(User author, String contents) {
+    public Comment(String author, String contents) {
         this.author = author;
         this.timeStamp = System.currentTimeMillis();
         this.contents = contents;
     }
 
-    public User getAuthor() {
+    public String getAuthor() {
         return author;
     }
 
     public long getTimeStamp() {
         return timeStamp;
+    }
+
+    
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     public String getContents() {

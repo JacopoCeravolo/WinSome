@@ -1,116 +1,158 @@
-[{
-  "uniqueID": 1,
-  "timeStamp": "Mar 16, 2022, 8:16:58 PM",
-  "author": {
-    "username": "user1",
-    "password": "pass",
-    "status": "ONLINE",
-    "tagsList": [
-      "tag1",
-      "tag2",
-      "tag3"
+4{
+  "1": {
+    "uniqueID": 1,
+    "timeStamp": 1647517240380,
+    "author": {
+      "username": "user1",
+      "password": "pass",
+      "status": "OFFLINE",
+      "tagsList": [
+        "tag1",
+        "tag2",
+        "tag3"
+      ],
+      "following": [],
+      "blog": [
+        1,
+        2
+      ],
+      "wallet": {
+        "totalAmount": 0.0,
+        "history": []
+      }
+    },
+    "title": "itol",
+    "contents": "ococ",
+    "upvotes": 1,
+    "downvotes": 0,
+    "rewins": 0,
+    "times_evalued": 1,
+    "votes": [
+      {
+        "author": "user2",
+        "timeStamp": 1647517254680,
+        "vote": 1
+      }
     ],
-    "following": [],
-    "blog": [
-      1,
-      2
-    ],
-    "wallet": {
-      "totalAmount": 0.0,
-      "history": []
-    }
+    "comments": [
+      {
+        "author": "user2",
+        "timeStamp": 1647517260293,
+        "contents": "nice"
+      }
+    ]
   },
-  "title": "iti",
-  "contents": "iti",
-  "upvotes": 0,
-  "downvotes": 0,
-  "rewins": 0,
-  "times_evalued": 1,
-  "votes": [],
-  "comments": []
-},
-{
-  "uniqueID": 2,
-  "timeStamp": "Mar 16, 2022, 8:17:00 PM",
-  "author": {
-    "username": "user1",
-    "password": "pass",
-    "status": "ONLINE",
-    "tagsList": [
-      "tag1",
-      "tag2",
-      "tag3"
-    ],
-    "following": [],
-    "blog": [
-      1,
-      2
-    ],
-    "wallet": {
-      "totalAmount": 0.0,
-      "history": []
-    }
+  "2": {
+    "uniqueID": 2,
+    "timeStamp": 1647517242644,
+    "author": {
+      "username": "user1",
+      "password": "pass",
+      "status": "OFFLINE",
+      "tagsList": [
+        "tag1",
+        "tag2",
+        "tag3"
+      ],
+      "following": [],
+      "blog": [
+        1,
+        2
+      ],
+      "wallet": {
+        "totalAmount": 0.0,
+        "history": []
+      }
+    },
+    "title": "itit",
+    "contents": "ocncnc",
+    "upvotes": 0,
+    "downvotes": 0,
+    "rewins": 0,
+    "times_evalued": 1,
+    "votes": [],
+    "comments": [
+      {
+        "author": "user2",
+        "timeStamp": 1647517256922,
+        "contents": "nice"
+      }
+    ]
   },
-  "title": "iti",
-  "contents": "sksk",
-  "upvotes": 0,
-  "downvotes": 0,
-  "rewins": 0,
-  "times_evalued": 1,
-  "votes": [],
-  "comments": []
-},
-{
-  "uniqueID": 3,
-  "timeStamp": "Mar 16, 2022, 8:17:26 PM",
-  "author": {
-    "username": "user",
-    "password": "pass",
-    "status": "ONLINE",
-    "tagsList": [],
-    "following": [],
-    "blog": [
-      3,
-      4
+  "3": {
+    "uniqueID": 3,
+    "timeStamp": 1647517250671,
+    "author": {
+      "username": "user2",
+      "password": "pass",
+      "status": "OFFLINE",
+      "tagsList": [
+        "tag2",
+        "tag3",
+        "tag4"
+      ],
+      "following": [
+        "user1"
+      ],
+      "blog": [
+        3
+      ],
+      "wallet": {
+        "totalAmount": 0.0,
+        "history": []
+      }
+    },
+    "title": "iti",
+    "contents": "iti",
+    "upvotes": 1,
+    "downvotes": 0,
+    "rewins": 0,
+    "times_evalued": 1,
+    "votes": [
+      {
+        "author": "user3",
+        "timeStamp": 1647517276073,
+        "vote": 1
+      }
     ],
-    "wallet": {
-      "totalAmount": 0.0,
-      "history": []
-    }
+    "comments": [
+      {
+        "author": "user3",
+        "timeStamp": 1647517278493,
+        "contents": "nice"
+      }
+    ]
   },
-  "title": "iti",
-  "contents": "ititi",
-  "upvotes": 0,
-  "downvotes": 0,
-  "rewins": 0,
-  "times_evalued": 0,
-  "votes": [],
-  "comments": []
-},
-{
-  "uniqueID": 4,
-  "timeStamp": "Mar 16, 2022, 8:17:29 PM",
-  "author": {
-    "username": "user",
-    "password": "pass",
-    "status": "ONLINE",
-    "tagsList": [],
-    "following": [],
-    "blog": [
-      3,
-      4
-    ],
-    "wallet": {
-      "totalAmount": 0.0,
-      "history": []
-    }
-  },
-  "title": "nttt",
-  "contents": "tntn",
-  "upvotes": 0,
-  "downvotes": 0,
-  "rewins": 0,
-  "times_evalued": 0,
-  "votes": [],
-  "comments": []
-}]
+  "4": {
+    "uniqueID": 4,
+    "timeStamp": 1647517266476,
+    "author": {
+      "username": "user3",
+      "password": "pass",
+      "status": "OFFLINE",
+      "tagsList": [
+        "tag3",
+        "tag4",
+        "tag5"
+      ],
+      "following": [
+        "user2"
+      ],
+      "blog": [
+        4
+      ],
+      "wallet": {
+        "totalAmount": 0.0,
+        "history": []
+      }
+    },
+    "title": "iti",
+    "contents": "itit",
+    "upvotes": 0,
+    "downvotes": 0,
+    "rewins": 0,
+    "times_evalued": 1,
+    "votes": [],
+    "comments": []
+  }
+}

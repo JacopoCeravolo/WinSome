@@ -61,6 +61,17 @@ public class ClientMain {
         FollowersUpdateInterface FOLLOWERS_UPDATE = null;
         boolean exit = false;
 
+        try {
+            RMI_REGISTRY = LocateRegistry.getRegistry(RMI_PORT);
+            REGISTRATION_STUB = (RMIRegistrationInterface) RMI_REGISTRY.lookup(RMI_SERVICE_NAME);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            System.exit(1);
+        } catch (NotBoundException e) {
+            System.err.println(RMI_SERVICE_NAME + " unknown service name");
+            System.exit(1);
+        }
+
         String activeUser = null;
 
         while (!exit) {
@@ -123,23 +134,18 @@ public class ClientMain {
 
                     // RMI
                     try {
-
-                        RMI_REGISTRY = LocateRegistry.getRegistry(RMI_PORT);
-
-                        REGISTRATION_STUB = (RMIRegistrationInterface) RMI_REGISTRY.lookup(RMI_SERVICE_NAME);
-                        
                         REGISTRATION_STUB.registerUser(username, password, tagsList);
 
                     } catch (RemoteException e) {
                         System.err.println("Error: " + e.getLocalizedMessage());
-                    } catch (NotBoundException e) {
-                        System.err.println(RMI_SERVICE_NAME + " unknown service name");
-                    }
+                    } 
 
                     break;
                 }
 
                 case "login": {
+
+                    
 
                     String username = keyboardParser.nextToken();
                     String password = keyboardParser.nextToken();
@@ -152,9 +158,13 @@ public class ClientMain {
 
                     try {
 
+           
+
                         serverSocket = new Socket("localhost", SERVER_PORT);  
                         serverInput = new BufferedReader(new InputStreamReader(serverSocket.getInputStream()));
                         serverOutput = new PrintWriter(serverSocket.getOutputStream(), true);
+
+      
 
                     } catch (UnknownHostException e) {
                         System.err.println("Unknown host");
@@ -166,11 +176,14 @@ public class ClientMain {
                         break;
                     }
 
+            
                     Protocol.sendRequest(serverOutput, action, username, password);
-
+      
                     String serverResponse = null;
                     try {
+            
                         serverResponse = Protocol.receiveResponse(serverInput);
+                    
                     } catch (IOException e) {
                         System.err.println("could not read from socket");
                     }
